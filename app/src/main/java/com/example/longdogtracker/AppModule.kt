@@ -30,6 +30,10 @@ object AppModule {
     @Provides
     fun provideEpisodeDao(db: LongDogDatabase) = db.episodeDao()
 
+    @Singleton
+    @Provides
+    fun provideSeasonDao(db: LongDogDatabase) = db.seasonDao()
+
     @Provides
     fun provideRetroFit() = Retrofit.Builder()
         .addConverterFactory(MoshiConverterFactory.create())

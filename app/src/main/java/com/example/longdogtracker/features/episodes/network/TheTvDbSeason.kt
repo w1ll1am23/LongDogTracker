@@ -13,6 +13,7 @@ data class TheTvDbEpisode(
     val id: Int,
     val name: String,
     val overview: String,
-    val image: String,
+    val image: String?,
     val number: Int,
+    val seasonNumber: Int,
 )

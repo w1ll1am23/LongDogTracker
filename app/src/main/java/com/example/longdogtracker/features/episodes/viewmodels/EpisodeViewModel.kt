@@ -1,11 +1,12 @@
 package com.example.longdogtracker.features.episodes.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.longdogtracker.features.episodes.EpisodesRepo
 import com.example.longdogtracker.features.episodes.model.EpisodesUIState
 import com.example.longdogtracker.features.episodes.model.UiEpisode
-import com.example.longdogtracker.features.episodes.network.TheTvDbApi
+import com.example.longdogtracker.features.episodes.model.UiSeason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,12 +20,21 @@ class EpisodeViewModel @Inject constructor(private val episodesRepo: EpisodesRep
         MutableStateFlow<EpisodesUIState>(EpisodesUIState.Loading)
     val episodesStateFlow: StateFlow<EpisodesUIState> = episodesMutableStateFlow
 
-    private var episodes: List<UiEpisode> = emptyList()
+    private var seasonEpisodeMap: Map<UiSeason, List<UiEpisode>> = mutableMapOf()
 
-    fun getSeries() {
+    fun loadInitialData() {
         viewModelScope.launch {
-            episodes = episodesRepo.getEpisodes() ?: emptyList()
-            episodesMutableStateFlow.value = EpisodesUIState.Episodes(episodes)
+            episodesRepo.getSeasonsForSeries()?.let {
+                if (it.isNotEmpty()) {
+                    seasonEpisodeMap = episodesRepo.getEpisodes(it)
+                } else {
+                    Log.d("EpisodeViewModel", "Empty seasons returned from repo")
+
+                }
+            } ?: {
+                Log.d("EpisodeViewModel", "Null seasons returned from repo")
+            }
+            episodesMutableStateFlow.value = EpisodesUIState.Episodes(seasonEpisodeMap)
         }
     }
 }

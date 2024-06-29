@@ -3,6 +3,7 @@ package com.example.longdogtracker.room
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Room
 import androidx.room.Update
 
 @Dao
@@ -10,8 +11,11 @@ interface EpisodeDao {
     @Query("SELECT * FROM episodes")
     fun getAll(): List<RoomEpisode>
 
+    @Query("SELECT * FROM episodes WHERE season LIKE :season")
+    fun getAllBySeason(season: Int) : List<RoomEpisode>
+
     @Insert
-    fun insertAll(vararg users: RoomEpisode)
+    fun insertAll(vararg episodes: RoomEpisode)
 
     @Update
     fun updateEpisode(episode: RoomEpisode)

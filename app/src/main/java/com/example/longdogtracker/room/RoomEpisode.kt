@@ -7,8 +7,9 @@ import androidx.room.PrimaryKey
 data class RoomEpisode(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
-    val number: Int,
+    val season: Int,
+    val episode: Int,
     val title: String,
     val description: String,
-    val imageUrl: String,
+    val imageUrl: String?,
 )
