@@ -11,12 +11,12 @@ sealed class UiSetting {
         val updateSetting: (id: String, toggledOn: Boolean) -> Unit
     ) : UiSetting()
 
-    data class RangeSetting(
+    data class StringSetting(
         val id: String,
         @StringRes val title: Int,
         @StringRes val description: Int,
-        val range: Pair<Int, Int>?,
-        val updateSetting: (id: String, range: Pair<Int, Int>) -> Unit
+        val value: String?,
+        val updateSetting: (id: String, value: String?) -> Unit
     ) : UiSetting()
 
     data class ResetSetting(
@@ -29,7 +29,7 @@ sealed class UiSetting {
     fun id(): String {
         return when (this) {
             is ToggleSetting -> this.id
-            is RangeSetting -> this.id
+            is StringSetting -> this.id
             is ResetSetting -> this.id
         }
     }
@@ -37,7 +37,7 @@ sealed class UiSetting {
     fun title(): Int {
         return when (this) {
             is ToggleSetting -> this.title
-            is RangeSetting -> this.title
+            is StringSetting -> this.title
             is ResetSetting -> this.title
         }
     }
@@ -45,7 +45,7 @@ sealed class UiSetting {
     fun description(): Int {
         return when (this) {
             is ToggleSetting -> this.description
-            is RangeSetting -> this.description
+            is StringSetting -> this.description
             is ResetSetting -> this.description
         }
     }

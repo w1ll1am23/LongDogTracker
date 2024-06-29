@@ -12,4 +12,7 @@ data class RoomEpisode(
     val title: String,
     val description: String,
     val imageUrl: String?,
+    val hasKnownLongDog: Boolean,
+    val allLongDogsFound: Boolean,
+    val foundUnknownLongDog: Boolean,
 )

@@ -20,24 +20,13 @@ class SettingsPreferences @Inject constructor(@ApplicationContext context: Conte
         }
     }
 
-    fun readIntRange(pref: String): Pair<Int, Int>? {
-        val rangeString = preferences.getString(pref, null)
-        val startAndEnd = rangeString?.split("-")
-        return startAndEnd?.let {
-            Pair(it.first().toInt(), it.last().toInt())
-        }
+    fun readStringPreference(pref: String): String? {
+        return preferences.getString(pref, null)
     }
 
-    fun writeIntRange(pref: String, range: Pair<Int, Int>) {
+    fun writeStringPreference(pref: String, value: String) {
         with(preferences.edit()) {
-            putString(pref, "${range.first}-${range.second}")
-            apply()
-        }
-    }
-
-    fun resetPreference(pref: String) {
-        with(preferences.edit()) {
-            remove(pref)
+            putString(pref, value)
             apply()
         }
     }

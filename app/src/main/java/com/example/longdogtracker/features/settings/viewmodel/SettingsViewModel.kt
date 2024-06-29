@@ -26,9 +26,6 @@ class SettingsViewModel @Inject constructor(
     fun loadSettings() {
         settingsMutableStateFlow.value = SettingsState.Loading
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                Thread.sleep(500)
-            }
             val allUiSettings = mutableListOf<UiSetting>()
             allSettingsList.forEach { setting ->
                 allUiSettings.add(
@@ -42,13 +39,13 @@ class SettingsViewModel @Inject constructor(
                                 ::updateToggleSetting
                             )
                         }
-                        SettingType.RANGE -> {
-                            UiSetting.RangeSetting(
+                        SettingType.STRING -> {
+                            UiSetting.StringSetting(
                                 setting.id,
                                 setting.title,
                                 setting.description,
-                                settingsPerfs.readIntRange(setting.id),
-                                ::updateRangeSetting
+                                settingsPerfs.readStringPreference(setting.id),
+                                ::updateStringSetting
                             )
                         }
                         SettingType.RESET -> {
@@ -71,9 +68,12 @@ class SettingsViewModel @Inject constructor(
         settingsPerfs.writeBooleanPreference(id, toggledOn)
     }
 
-    private fun updateRangeSetting(id: String, range: Pair<Int, Int>) {
-        Log.d("SettingsViewModel", "Updating $id to ${range.first}-${range.second}")
-        settingsPerfs.writeIntRange(id, range)
+    private fun updateStringSetting(id: String, value: String?) {
+        Log.d("SettingsViewModel", "Updating $id to $value")
+        value?.let {
+            settingsPerfs.writeStringPreference(id, it)
+        }
     }
+
 
 }
