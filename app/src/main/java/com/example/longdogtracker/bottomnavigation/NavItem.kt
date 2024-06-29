@@ -1,0 +1,35 @@
+package com.example.longdogtracker.bottomnavigation
+
+import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.longdogtracker.R
+
+
+sealed class NavItem(@StringRes var title: Int, var icon: ImageVector, var screenRoute: String) {
+
+    data object Episodes : NavItem(
+        title = R.string.navigation_episodes,
+        icon = Icons.Default.DateRange,
+        screenRoute = "episodes"
+    )
+
+    data object Characters : NavItem(
+        title = R.string.navigation_characters,
+        icon = Icons.Default.List,
+        screenRoute = "characters"
+    )
+
+    data object Other : NavItem(
+        title = R.string.navigation_other,
+        icon = Icons.Default.Star,
+        screenRoute = "other"
+    )
+
+    data object Settings : NavItem(
+        title = R.string.navigation_settings,
+        icon = Icons.Default.Settings,
+        screenRoute = "settings"
+    )
+}
