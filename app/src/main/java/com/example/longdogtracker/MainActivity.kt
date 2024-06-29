@@ -72,7 +72,6 @@ class MainActivity : ComponentActivity() {
                                 .background(MaterialTheme.colors.background)
                                 .padding(innerPadding)
                         ) {
-
                             NavigationGraph(navController = navController)
                         }
                     }
