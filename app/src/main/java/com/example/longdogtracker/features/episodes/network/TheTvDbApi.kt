@@ -1,5 +1,7 @@
 package com.example.longdogtracker.features.episodes.network
 
+import com.example.longdogtracker.features.episodes.network.model.TheTvDbSeason
+import com.example.longdogtracker.features.episodes.network.model.TheTvDbSeries
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Header

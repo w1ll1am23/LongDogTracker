@@ -4,9 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.longdogtracker.features.episodes.EpisodesRepo
-import com.example.longdogtracker.features.episodes.model.EpisodesUIState
-import com.example.longdogtracker.features.episodes.model.UiEpisode
-import com.example.longdogtracker.features.episodes.model.UiSeason
+import com.example.longdogtracker.features.episodes.ui.model.EpisodesUIState
+import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
+import com.example.longdogtracker.features.episodes.ui.model.UiSeason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

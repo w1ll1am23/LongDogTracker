@@ -15,4 +15,5 @@ data class RoomEpisode(
     val hasKnownLongDog: Boolean,
     val allLongDogsFound: Boolean,
     val foundUnknownLongDog: Boolean,
+    val longDogLocation: String?
 )

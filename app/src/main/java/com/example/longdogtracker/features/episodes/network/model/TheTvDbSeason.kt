@@ -1,4 +1,4 @@
-package com.example.longdogtracker.features.episodes.network
+package com.example.longdogtracker.features.episodes.network.model
 
 import com.squareup.moshi.JsonClass
 

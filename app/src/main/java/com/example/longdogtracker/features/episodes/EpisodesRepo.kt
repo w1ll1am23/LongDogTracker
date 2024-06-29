@@ -1,11 +1,10 @@
 package com.example.longdogtracker.features.episodes
 
 import android.util.Log
-import com.example.longdogtracker.features.episodes.model.UiEpisode
-import com.example.longdogtracker.features.episodes.model.UiSeason
 import com.example.longdogtracker.features.episodes.network.TheTvDbApi
+import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
+import com.example.longdogtracker.features.episodes.ui.model.UiSeason
 import com.example.longdogtracker.features.settings.SettingsPreferences
-import com.example.longdogtracker.features.settings.model.Setting
 import com.example.longdogtracker.features.settings.model.settingOauthToken
 import com.example.longdogtracker.room.EpisodeDao
 import com.example.longdogtracker.room.RoomEpisode
@@ -16,13 +15,13 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class EpisodesRepo @Inject constructor(
-    val theTvDbApi: TheTvDbApi,
+    private val theTvDbApi: TheTvDbApi,
     private val episodeDao: EpisodeDao,
     private val seasonDao: SeasonDao,
     private val settingsPreferences: SettingsPreferences,
 ) {
 
-    suspend fun getSeasonsForSeries(): List<UiSeason>? {
+    suspend fun getSeasonsForSeries(): List<UiSeason> {
         return withContext(Dispatchers.IO) {
             val seasons = seasonDao.getAll()
             // The DB is empty need to fetch from the service
@@ -32,7 +31,7 @@ class EpisodesRepo @Inject constructor(
                     if (result.isSuccessful) {
                         result.body()?.data?.seasons?.let { theTvDbSeasons ->
                             val seasonsArray = theTvDbSeasons.mapNotNull {
-                                if (it.type.type == "aired") {
+                                if (it.type.type == "official") {
                                     RoomSeason(
                                         id = it.id,
                                         number = it.number,
@@ -52,7 +51,7 @@ class EpisodesRepo @Inject constructor(
                             }
                         }
                     } else {
-                        Log.d("EpisodesRepo", "Failed to fetch data from service.")
+                        Log.d("EpisodesRepo", "Failed to fetch data from service. Response: ${result.code()}")
                         emptyList()
                     }
                 } ?: run {
@@ -76,7 +75,10 @@ class EpisodesRepo @Inject constructor(
                         title = it.title,
                         description = it.description,
                         imageUrl = it.imageUrl,
-                        season = it.season
+                        season = it.season,
+                        hasKnownLongDog = it.hasKnownLongDog,
+                        foundLongDog = it.allLongDogsFound,
+                        longDogLocation = it.longDogLocation,
                     )
                 }
             }
@@ -92,6 +94,7 @@ class EpisodesRepo @Inject constructor(
                         )
                         val result = theTvDbApi.getSeason(token, season.id).execute()
                         if (result.isSuccessful) {
+                            val longDogMap = getKnownLongDogsMap()
                             result.body()?.data?.episodes?.let { theTvDbEpisodes ->
                                 val episodesArray = theTvDbEpisodes.map {
                                     RoomEpisode(
@@ -101,9 +104,10 @@ class EpisodesRepo @Inject constructor(
                                         title = it.name,
                                         description = it.overview,
                                         imageUrl = it.image,
-                                        hasKnownLongDog = false,
+                                        hasKnownLongDog = longDogMap[it.seasonNumber]?.get(it.number) != null,
                                         allLongDogsFound = false,
                                         foundUnknownLongDog = false,
+                                        longDogLocation = longDogMap[it.seasonNumber]?.get(it.number)
                                     )
                                 }.toTypedArray()
                                 episodeDao.insertAll(*episodesArray)
@@ -123,12 +127,24 @@ class EpisodesRepo @Inject constructor(
                             title = it.title,
                             description = it.description,
                             imageUrl = it.imageUrl,
-                            season = it.season
+                            season = it.season,
+                            hasKnownLongDog = it.hasKnownLongDog,
+                            foundLongDog = it.allLongDogsFound,
+                            longDogLocation = it.longDogLocation,
                         )
                     }
                 }
             }
             seasonEpisodeMap
         }
+    }
+
+    private fun getKnownLongDogsMap(): Map<Int, Map<Int, String>> {
+        val knownLongDogs: KnownLongDogs = KnownLongDogs()
+        return mapOf(
+            Pair(1, knownLongDogs.seasonOne),
+            Pair(2, knownLongDogs.seasonTwo),
+            Pair(3, knownLongDogs.seasonThree)
+        )
     }
 }
