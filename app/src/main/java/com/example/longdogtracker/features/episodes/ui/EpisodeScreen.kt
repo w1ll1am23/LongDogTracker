@@ -72,7 +72,7 @@ private fun HandleUiState(uiState: EpisodesUIState) {
                 mutableStateOf(false)
             }
             val selectedEpisode = remember {
-                mutableStateOf(UiEpisode(999, "", "", null, 1, false, false, null))
+                mutableStateOf(UiEpisode(999, "", "", null, 1, 1, false, false, null))
             }
             LazyColumn {
                 uiState.seasonEpisodeMap.forEach { (season, episodes) ->
@@ -111,7 +111,7 @@ private fun HandleUiState(uiState: EpisodesUIState) {
                                         )
                                     }
                                     Text(
-                                        "Season: ${episode.season}",
+                                        "Season: ${episode.season} Episode: ${episode.episode}",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = TextUnit(16F, TextUnitType.Sp)
                                     )

@@ -6,6 +6,7 @@ data class UiEpisode(
     val description: String,
     val imageUrl: String?,
     val season: Int,
+    val episode: Int,
     val hasKnownLongDog: Boolean,
     val foundLongDog: Boolean,
     val longDogLocation: String?

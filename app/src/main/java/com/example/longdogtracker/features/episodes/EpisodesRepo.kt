@@ -80,6 +80,7 @@ class EpisodesRepo @Inject constructor(
                         hasKnownLongDog = it.hasKnownLongDog,
                         foundLongDog = it.allLongDogsFound,
                         longDogLocation = it.longDogLocation,
+                        episode = it.episode
                     )
                 }
             }
@@ -133,6 +134,7 @@ class EpisodesRepo @Inject constructor(
                             hasKnownLongDog = it.hasKnownLongDog,
                             foundLongDog = it.allLongDogsFound,
                             longDogLocation = it.longDogLocation,
+                            episode = it.episode,
                         )
                     }
                 }
