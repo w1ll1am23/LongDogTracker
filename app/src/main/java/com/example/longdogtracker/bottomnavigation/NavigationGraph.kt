@@ -44,20 +44,6 @@ fun NavigationGraph(
             CharactersScreen()
         }
 
-        composable(NavItem.Other.screenRoute, enterTransition = {
-            slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
-                animationSpec = tween(600)
-            )
-        }, exitTransition = {
-            slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
-                animationSpec = tween(600)
-            )
-        }) {
-            Text("Other")
-        }
-
         composable(NavItem.Settings.screenRoute, enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Companion.Up,

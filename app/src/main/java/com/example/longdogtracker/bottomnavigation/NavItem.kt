@@ -22,12 +22,6 @@ sealed class NavItem(@StringRes var title: Int, var icon: ImageVector, var scree
         screenRoute = "characters"
     )
 
-    data object Other : NavItem(
-        title = R.string.navigation_other,
-        icon = Icons.Default.Star,
-        screenRoute = "other"
-    )
-
     data object Settings : NavItem(
         title = R.string.navigation_settings,
         icon = Icons.Default.Settings,

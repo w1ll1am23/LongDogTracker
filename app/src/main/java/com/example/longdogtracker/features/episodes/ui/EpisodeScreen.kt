@@ -72,7 +72,7 @@ private fun HandleUiState(uiState: EpisodesUIState) {
                 mutableStateOf(false)
             }
             val selectedEpisode = remember {
-                mutableStateOf(UiEpisode(999, "", "", null, 1, 1, false, false, null))
+                mutableStateOf<UiEpisode?>(null)
             }
             LazyColumn {
                 uiState.seasonEpisodeMap.forEach { (season, episodes) ->
@@ -139,14 +139,16 @@ private fun HandleUiState(uiState: EpisodesUIState) {
                 }
             }
             if (showEpisodeSheet.value) {
-                ModalBottomSheet(
-                    containerColor = BlueyBackgroundPrimary,
-                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                    sheetState = rememberModalBottomSheetState(),
-                    windowInsets = WindowInsets.safeDrawing,
-                    dragHandle = { BottomSheetDefaults.HiddenShape },
-                    onDismissRequest = { showEpisodeSheet.value = false }) {
-                    EpisodeSheet(episode = selectedEpisode.value)
+                selectedEpisode.value?.let {
+                    ModalBottomSheet(
+                        containerColor = BlueyBackgroundPrimary,
+                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                        sheetState = rememberModalBottomSheetState(),
+                        windowInsets = WindowInsets.safeDrawing,
+                        dragHandle = { BottomSheetDefaults.HiddenShape },
+                        onDismissRequest = { showEpisodeSheet.value = false }) {
+                        EpisodeSheet(episode = it)
+                    }
                 }
             }
         }

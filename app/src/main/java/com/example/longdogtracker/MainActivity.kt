@@ -15,6 +15,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -23,7 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.longdogtracker.bottomnavigation.NavItem
 import com.example.longdogtracker.bottomnavigation.NavigationGraph
-import com.example.longdogtracker.bottomnavigation.BottomNavigation
+import com.example.longdogtracker.bottomnavigation.MainBottomNavigation
 import com.example.longdogtracker.ui.theme.LongDogTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,7 +56,7 @@ class MainActivity : ComponentActivity() {
                                                 restoreState = true
                                             }
                                         }) {
-                                            Icon(imageVector = Icons.Default.Settings, null)
+                                            Icon(imageVector = Icons.Default.MoreVert, null)
                                         }
                                     }
                                 } else {
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
                             )
                         },
                         bottomBar = {
-                            BottomNavigation(navController)
+                            MainBottomNavigation(navController)
                         }
                     ) { innerPadding ->
                         Column(

@@ -82,7 +82,7 @@ class EpisodesRepo @Inject constructor(
                         longDogLocation = it.longDogLocation,
                         episode = it.episode
                     )
-                }
+                }.sortedBy { it.episode }
             }
             seasonEpisodeMap.forEach { (season, episodes) ->
                 if (episodes.isEmpty()) {
@@ -136,7 +136,7 @@ class EpisodesRepo @Inject constructor(
                             longDogLocation = it.longDogLocation,
                             episode = it.episode,
                         )
-                    }
+                    }.sortedBy { it.episode }
                 }
             }
             seasonEpisodeMap
