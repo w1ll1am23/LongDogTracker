@@ -72,6 +72,7 @@ class EpisodesRepo @Inject constructor(
                 val episodes = episodeDao.getAllBySeason(season.number)
                 seasonEpisodeMap[season] = episodes.map {
                     UiEpisode(
+                        id = it.id,
                         title = it.title,
                         description = it.description,
                         imageUrl = it.imageUrl,
@@ -124,6 +125,7 @@ class EpisodesRepo @Inject constructor(
                     val episodes = episodeDao.getAllBySeason(season.number)
                     seasonEpisodeMap[season] = episodes.map {
                         UiEpisode(
+                            id = it.id,
                             title = it.title,
                             description = it.description,
                             imageUrl = it.imageUrl,
@@ -139,8 +141,19 @@ class EpisodesRepo @Inject constructor(
         }
     }
 
+    suspend fun updateEpisode(uiEpisode: UiEpisode) {
+        withContext(Dispatchers.IO) {
+            val episode = episodeDao.getEpisodeById(uiEpisode.id)
+            val updatedEpisode = episode.copy(
+                allLongDogsFound = uiEpisode.foundLongDog,
+                longDogLocation = uiEpisode.longDogLocation
+            )
+            episodeDao.updateEpisode(updatedEpisode)
+        }
+    }
+
     private fun getKnownLongDogsMap(): Map<Int, Map<Int, String>> {
-        val knownLongDogs: KnownLongDogs = KnownLongDogs()
+        val knownLongDogs = KnownLongDogs()
         return mapOf(
             Pair(1, knownLongDogs.seasonOne),
             Pair(2, knownLongDogs.seasonTwo),

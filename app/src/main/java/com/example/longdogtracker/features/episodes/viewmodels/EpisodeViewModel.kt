@@ -24,15 +24,13 @@ class EpisodeViewModel @Inject constructor(private val episodesRepo: EpisodesRep
 
     fun loadInitialData() {
         viewModelScope.launch {
-            episodesRepo.getSeasonsForSeries()?.let {
+            episodesRepo.getSeasonsForSeries().let {
                 if (it.isNotEmpty()) {
                     seasonEpisodeMap = episodesRepo.getEpisodes(it)
                 } else {
-                    Log.d("EpisodeViewModel", "Empty seasons returned from repo")
+                    Log.e("EpisodeViewModel", "Empty seasons returned from repo")
 
                 }
-            } ?: {
-                Log.d("EpisodeViewModel", "Null seasons returned from repo")
             }
             episodesMutableStateFlow.value = EpisodesUIState.Episodes(seasonEpisodeMap)
         }

@@ -1,15 +1,15 @@
 <resources>
     <string name="app_name">Long Dog Tracker</string>
 
-
     <!-- Settings-->
     <string name="setting_api_key">API Key</string>
     <string name="setting_api_key_description">The API key for TheTVDB</string>
     <string name="setting_auth_token">Oauth Token</string>
     <string name="setting_auth_token_description">The oauth token for TheTVDB</string>
+    <string name="setting_reset_cache">Reset the Cache</string>
+    <string name="setting_reset_cache_description">Empty the database</string>
+    <string name="setting_clear_cache_button">CLEAR CACHE</string>
     <string name="setting_save_button">SAVE</string>
-
-
 
     <!-- Navigation-->
     <string name="navigation_episodes">Episodes</string>

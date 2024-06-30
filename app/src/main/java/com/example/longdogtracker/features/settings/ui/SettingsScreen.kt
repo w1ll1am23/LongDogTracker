@@ -1,14 +1,32 @@
 package com.example.longdogtracker.features.settings.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,33 +68,29 @@ private fun HandleSettingsState(state: SettingsState) {
                                 .padding(8.dp)
                                 .fillMaxWidth()
                         ) {
+                            Text(
+                                text = stringResource(id = item.title()),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp
+                            )
+                            Text(
+                                text = stringResource(id = item.description()),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
                             when (item) {
-                                is UiSetting.ResetSetting -> Unit
+                                is UiSetting.ResetSetting -> {
+                                    ResetSetting(item)
+                                }
                                 is UiSetting.StringSetting -> {
-                                    Text(
-                                        text = stringResource(id = item.title()),
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 24.sp
-                                    )
-                                    Text(
-                                        text = stringResource(id = item.description()),
-                                        fontSize = 12.sp,
-                                        modifier = Modifier.padding(horizontal = 8.dp)
-                                    )
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(8.dp)
-                                    ) {
-                                        StringSetting(item)
-                                    }
+                                    StringSetting(item)
                                 }
 
                                 is UiSetting.ToggleSetting -> Unit
                             }
                         }
                         if (index < state.uiSettings.size - 1) {
-                            Divider()
+                            HorizontalDivider()
                         }
                     })
                 }
@@ -112,6 +126,14 @@ private fun StringSetting(setting: UiSetting.StringSetting) {
         Button(onClick = { setting.updateSetting(setting.id, text) }, modifier = Modifier.weight(.3f)) {
             Text(stringResource(id = R.string.setting_save_button))
         }
+    }
+
+}
+
+@Composable
+private fun ResetSetting(setting: UiSetting.ResetSetting) {
+    Button(onClick = { setting.updateSetting.invoke(setting.id) }) {
+        Text(stringResource(id = R.string.setting_clear_cache_button))
     }
 
 }

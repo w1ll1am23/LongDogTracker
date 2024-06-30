@@ -46,10 +46,10 @@ class CharacterRepo @Inject constructor(
                             characterDao.insertAll(*charactersArray)
                         }
                     } else {
-                        Log.d("CharactersRepo", "Failed to fetch data from service. Response: ${result.code()}")
+                        Log.e("CharactersRepo", "Failed to fetch data from service. Response: ${result.code()}")
                     }
                 } ?: run {
-                    Log.d("CharactersRepo", "No oauth token in shared prefs")
+                    Log.e("CharactersRepo", "No oauth token in shared prefs")
                 }
             }
             if (hadToFetchFromService) {

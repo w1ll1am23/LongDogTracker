@@ -5,6 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.longdogtracker.features.settings.SettingsPreferences
 import com.example.longdogtracker.features.settings.model.*
+import com.example.longdogtracker.room.CharacterDao
+import com.example.longdogtracker.room.EpisodeDao
+import com.example.longdogtracker.room.LongDogDatabase
+import com.example.longdogtracker.room.SeasonDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsPerfs: SettingsPreferences,
+    private val longDogDatabase: LongDogDatabase
 ) :
     ViewModel() {
 
@@ -39,6 +44,7 @@ class SettingsViewModel @Inject constructor(
                                 ::updateToggleSetting
                             )
                         }
+
                         SettingType.STRING -> {
                             UiSetting.StringSetting(
                                 setting.id,
@@ -48,13 +54,15 @@ class SettingsViewModel @Inject constructor(
                                 ::updateStringSetting
                             )
                         }
+
                         SettingType.RESET -> {
                             UiSetting.ResetSetting(
                                 setting.id,
                                 setting.title,
-                                setting.description,
-                                {}
-                            )
+                                setting.description
+                            ) {
+                                resetCache()
+                            }
                         }
                     }
                 )
@@ -64,14 +72,20 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun updateToggleSetting(id: String, toggledOn: Boolean) {
-        Log.d("SettingsViewModel", "Updating $id to $toggledOn")
+        Log.i("SettingsViewModel", "Updating $id to $toggledOn")
         settingsPerfs.writeBooleanPreference(id, toggledOn)
     }
 
     private fun updateStringSetting(id: String, value: String?) {
-        Log.d("SettingsViewModel", "Updating $id to $value")
+        Log.i("SettingsViewModel", "Updating $id to $value")
         value?.let {
             settingsPerfs.writeStringPreference(id, it)
+        }
+    }
+
+    private fun resetCache() {
+        viewModelScope.launch(context = Dispatchers.IO) {
+            longDogDatabase.clearAllTables()
         }
     }
 

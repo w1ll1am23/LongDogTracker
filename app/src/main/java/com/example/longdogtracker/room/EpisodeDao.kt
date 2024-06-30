@@ -11,6 +11,9 @@ interface EpisodeDao {
     @Query("SELECT * FROM episodes")
     fun getAll(): List<RoomEpisode>
 
+    @Query("SELECT * FROM episodes WHERE id LIKE :id")
+    fun getEpisodeById(id: Int): RoomEpisode
+
     @Query("SELECT * FROM episodes WHERE season LIKE :season")
     fun getAllBySeason(season: Int) : List<RoomEpisode>
 

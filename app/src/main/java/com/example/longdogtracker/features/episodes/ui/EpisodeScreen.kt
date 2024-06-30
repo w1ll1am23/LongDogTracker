@@ -1,6 +1,7 @@
 package com.example.longdogtracker.features.episodes.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,12 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +48,7 @@ import com.example.longdogtracker.R
 import com.example.longdogtracker.features.episodes.ui.model.EpisodesUIState
 import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
 import com.example.longdogtracker.features.episodes.viewmodels.EpisodeViewModel
+import com.example.longdogtracker.ui.theme.BlueyBackgroundPrimary
 
 @Composable
 fun EpisodesScreen() {
@@ -69,7 +72,7 @@ private fun HandleUiState(uiState: EpisodesUIState) {
                 mutableStateOf(false)
             }
             val selectedEpisode = remember {
-                mutableStateOf(UiEpisode("", "", null, 1, false, false, null))
+                mutableStateOf(UiEpisode(999, "", "", null, 1, false, false, null))
             }
             LazyColumn {
                 uiState.seasonEpisodeMap.forEach { (season, episodes) ->
@@ -82,7 +85,7 @@ private fun HandleUiState(uiState: EpisodesUIState) {
                                         selectedEpisode.value = episode
                                         showEpisodeSheet.value = true
                                     },
-                                elevation = 4.dp,
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                                 shape = RoundedCornerShape(size = 16.dp)
                             ) {
                                 Column(Modifier.padding(16.dp)) {
@@ -137,6 +140,7 @@ private fun HandleUiState(uiState: EpisodesUIState) {
             }
             if (showEpisodeSheet.value) {
                 ModalBottomSheet(
+                    containerColor = BlueyBackgroundPrimary,
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
                     sheetState = rememberModalBottomSheetState(),
                     windowInsets = WindowInsets.safeDrawing,

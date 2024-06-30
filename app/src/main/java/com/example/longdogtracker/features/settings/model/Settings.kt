@@ -4,6 +4,7 @@ import com.example.longdogtracker.R
 
 const val settingApiKey = "API_KEY"
 const val settingOauthToken = "OAUTH_TOKEN"
+const val settingResetCache = "RESET_CACHE"
 
 
 val apiKey = Setting(
@@ -20,5 +21,12 @@ val oauthToken = Setting(
     type = SettingType.STRING
 )
 
+val resetCache = Setting(
+    id = settingResetCache,
+    title = R.string.setting_reset_cache,
+    description = R.string.setting_reset_cache_description,
+    type = SettingType.RESET
+)
 
-val allSettingsList = listOf(apiKey, oauthToken)
+
+val allSettingsList = listOf(apiKey, oauthToken, resetCache)
