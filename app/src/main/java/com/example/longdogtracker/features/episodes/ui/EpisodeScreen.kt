@@ -1,7 +1,6 @@
 package com.example.longdogtracker.features.episodes.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -23,6 +23,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,8 +37,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -69,6 +70,11 @@ fun EpisodesScreen() {
 @Composable
 private fun HandleUiState(uiState: EpisodesUIState) {
     when (uiState) {
+        EpisodesUIState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
         is EpisodesUIState.Episodes -> {
             val showEpisodeSheet = remember {
                 mutableStateOf(false)
@@ -155,10 +161,27 @@ private fun HandleUiState(uiState: EpisodesUIState) {
             }
         }
 
-        EpisodesUIState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        is EpisodesUIState.Error -> {
+            val showError = remember {
+                mutableStateOf(true)
+            }
+            if (showError.value) {
+                AlertDialog(
+                    title = { Text(text = stringResource(id = R.string.error_unknown_title)) },
+                    text = { Text(text = stringResource(id = uiState.errorMessage)) },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                showError.value = false
+                            }
+                        ) {
+                            Text(stringResource(id = R.string.error_dismiss_button_copy))
+                        }
+                    },
+                    onDismissRequest = { showError.value = false },
+                    confirmButton = { })
             }
         }
+
     }
 }

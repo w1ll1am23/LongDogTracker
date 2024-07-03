@@ -15,4 +15,13 @@
     <string name="navigation_other">Other</string>
     <string name="navigation_settings">Settings</string>
 
+    <!-- Errors-->
+    <string name="error_unknown_title">Something went wrong</string>
+    <string name="error_dismiss_button_copy">Dismiss</string>
+    <string name="error_unknown_issue_fetching_auth">An unknown issue occurred while attempting to authenticate with service.</string>
+    <string name="error_unknown_issue_fetching_characters">An unknown issue occurred while fetching characters from service.</string>
+    <string name="error_unknown_issue_fetching_seasons">An unknown issue occurred while fetching seasons from service.</string>
+    <string name="error_unknown_issue_fetching_episodes">An unknown issue occurred while fetching episodes from service.</string>
+
+
 </resources>

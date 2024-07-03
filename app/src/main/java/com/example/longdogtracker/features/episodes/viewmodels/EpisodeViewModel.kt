@@ -20,19 +20,25 @@ class EpisodeViewModel @Inject constructor(private val episodesRepo: EpisodesRep
         MutableStateFlow<EpisodesUIState>(EpisodesUIState.Loading)
     val episodesStateFlow: StateFlow<EpisodesUIState> = episodesMutableStateFlow
 
-    private var seasonEpisodeMap: Map<UiSeason, List<UiEpisode>> = mutableMapOf()
-
     fun loadInitialData() {
         viewModelScope.launch {
-            episodesRepo.getSeasonsForSeries().let {
-                if (it.isNotEmpty()) {
-                    seasonEpisodeMap = episodesRepo.getEpisodes(it)
-                } else {
-                    Log.e("EpisodeViewModel", "Empty seasons returned from repo")
+            episodesMutableStateFlow.value =
+                when (val seasonsResult = episodesRepo.getSeasonsForSeries()) {
+                    is EpisodesRepo.GetSeasonsResult.Seasons -> {
+                        when (val episodesResult =
+                            episodesRepo.getEpisodes(seasonsResult.seasons)) {
+                            is EpisodesRepo.GetEpisodesResult.Episodes -> {
+                                EpisodesUIState.Episodes(episodesResult.episodes)
+                            }
 
+                            is EpisodesRepo.GetEpisodesResult.Failure -> {
+                                EpisodesUIState.Error(episodesResult.errorMessage)
+                            }
+                        }
+                    }
+
+                    is EpisodesRepo.GetSeasonsResult.Failure -> EpisodesUIState.Error(seasonsResult.errorMessage)
                 }
-            }
-            episodesMutableStateFlow.value = EpisodesUIState.Episodes(seasonEpisodeMap)
         }
     }
 }

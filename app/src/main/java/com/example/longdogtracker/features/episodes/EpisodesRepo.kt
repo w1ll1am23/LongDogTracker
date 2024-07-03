@@ -1,13 +1,16 @@
 package com.example.longdogtracker.features.episodes
 
 import android.util.Log
+import androidx.annotation.StringRes
 import com.example.longdogtracker.BuildConfig
+import com.example.longdogtracker.R
 import com.example.longdogtracker.features.episodes.network.TheTvDbApi
 import com.example.longdogtracker.features.episodes.network.model.TheTvDbLoginBody
 import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
 import com.example.longdogtracker.features.episodes.ui.model.UiSeason
 import com.example.longdogtracker.features.settings.SettingsPreferences
 import com.example.longdogtracker.features.settings.model.settingOauthToken
+import com.example.longdogtracker.network.LoginServiceInteractor
 import com.example.longdogtracker.room.EpisodeDao
 import com.example.longdogtracker.room.RoomEpisode
 import com.example.longdogtracker.room.RoomSeason
@@ -21,39 +24,24 @@ class EpisodesRepo @Inject constructor(
     private val episodeDao: EpisodeDao,
     private val seasonDao: SeasonDao,
     private val settingsPreferences: SettingsPreferences,
+    private val loginServiceInteractor: LoginServiceInteractor,
 ) {
 
-    private fun isNotLoggedIn() =
-        settingsPreferences.readStringPreference(settingOauthToken) == null
-
-    private suspend fun login() {
-        val result = theTvDbApi.getOauthToken(TheTvDbLoginBody(BuildConfig.THE_TV_DB_API_KEY)).execute()
-        if (result.isSuccessful) {
-            result.body()?.data?.token?.let {
-                settingsPreferences.writeStringPreference(settingOauthToken, it)
-            } ?: {
-                Log.e(
-                    "EpisodesRepo",
-                    "Success logging in but token wasn't in response"
-                )
-            }
-        } else {
-            Log.e(
-                "EpisodesRepo",
-                "Failed to log in. Response: ${result.code()}"
-            )
-        }
-    }
-
-    suspend fun getSeasonsForSeries(): List<UiSeason> {
+    suspend fun getSeasonsForSeries(): GetSeasonsResult {
         var seasonWereFetchedFromService = false
         return withContext(Dispatchers.IO) {
             var seasons = seasonDao.getAll()
             // The DB is empty need to fetch from the service
             if (seasons.isEmpty()) {
-                if (isNotLoggedIn()) {
-                    login()
+                if (loginServiceInteractor.isNotLoggedIn()) {
+                    when (val result = loginServiceInteractor.login()) {
+                        LoginServiceInteractor.LoginStatus.Success -> Unit
+                        is LoginServiceInteractor.LoginStatus.Error -> {
+                            GetSeasonsResult.Failure(result.errorMessage)
+                        }
+                    }
                 }
+
                 seasonWereFetchedFromService = true
                 val result = theTvDbApi.getSeries().execute()
                 if (result.isSuccessful) {
@@ -73,21 +61,19 @@ class EpisodesRepo @Inject constructor(
                         seasonDao.insertAll(*seasonsArray)
                     }
                 } else {
-                    Log.d(
-                        "EpisodesRepo",
-                        "Failed to fetch data from service. Response: ${result.code()}"
-                    )
+                    GetSeasonsResult.Failure(R.string.error_unknown_issue_fetching_seasons)
                 }
 
             }
             if (seasonWereFetchedFromService) {
                 seasons = seasonDao.getAll()
             }
-            seasons.map { UiSeason(id = it.id, number = it.number) }
+            GetSeasonsResult.Seasons(
+                seasons.map { UiSeason(id = it.id, number = it.number) })
         }
     }
 
-    suspend fun getEpisodes(seasons: List<UiSeason>): Map<UiSeason, List<UiEpisode>> {
+    suspend fun getEpisodes(seasons: List<UiSeason>): GetEpisodesResult {
         return withContext(Dispatchers.IO) {
             val seasonEpisodeMap = mutableMapOf<UiSeason, List<UiEpisode>>()
             var hadToFetchSeason = false
@@ -116,8 +102,13 @@ class EpisodesRepo @Inject constructor(
                         "EpisodesRepo",
                         "Calling service to get episodes for season ${season.number}"
                     )
-                    if (isNotLoggedIn()) {
-                        login()
+                    if (loginServiceInteractor.isNotLoggedIn()) {
+                        when (val result = loginServiceInteractor.login()) {
+                            LoginServiceInteractor.LoginStatus.Success -> Unit
+                            is LoginServiceInteractor.LoginStatus.Error -> {
+                                GetEpisodesResult.Failure(result.errorMessage)
+                            }
+                        }
                     }
                     val result = theTvDbApi.getSeason(season.id).execute()
                     if (result.isSuccessful) {
@@ -139,6 +130,8 @@ class EpisodesRepo @Inject constructor(
                             }.toTypedArray()
                             episodeDao.insertAll(*episodesArray)
                         }
+                    } else {
+                        GetEpisodesResult.Failure(R.string.error_unknown_issue_fetching_episodes)
                     }
                 }
             }
@@ -161,7 +154,7 @@ class EpisodesRepo @Inject constructor(
                     }.sortedBy { it.episode }
                 }
             }
-            seasonEpisodeMap
+            GetEpisodesResult.Episodes(seasonEpisodeMap)
         }
     }
 
@@ -183,5 +176,15 @@ class EpisodesRepo @Inject constructor(
             Pair(2, knownLongDogs.seasonTwo),
             Pair(3, knownLongDogs.seasonThree)
         )
+    }
+
+    sealed class GetSeasonsResult {
+        data class Seasons(val seasons: List<UiSeason>) : GetSeasonsResult()
+        data class Failure(@StringRes val errorMessage: Int) : GetSeasonsResult()
+    }
+
+    sealed class GetEpisodesResult {
+        data class Episodes(val episodes: Map<UiSeason, List<UiEpisode>>) : GetEpisodesResult()
+        data class Failure(@StringRes val errorMessage: Int) : GetEpisodesResult()
     }
 }

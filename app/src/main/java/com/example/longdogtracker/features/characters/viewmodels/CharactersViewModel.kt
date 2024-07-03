@@ -2,6 +2,7 @@ package com.example.longdogtracker.features.characters.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.longdogtracker.R
 import com.example.longdogtracker.features.characters.CharacterRepo
 import com.example.longdogtracker.features.characters.model.CharactersUIState
 import com.example.longdogtracker.features.settings.SettingsPreferences
@@ -22,8 +23,14 @@ class CharactersViewModel @Inject constructor(
 
     fun getCharacters() {
         viewModelScope.launch {
-            val characters = characterRepo.getCharactersForSeries()
-            charactersMutableStateFlow.value = CharactersUIState.Characters(characters)
+            charactersMutableStateFlow.value =
+                when (val result = characterRepo.getCharactersForSeries()) {
+                    is CharacterRepo.GetCharacterStatus.Characters -> CharactersUIState.Characters(
+                        result.characters
+                    )
+
+                    is CharacterRepo.GetCharacterStatus.Failure -> CharactersUIState.Error(result.errorMessage)
+                }
         }
     }
 }
