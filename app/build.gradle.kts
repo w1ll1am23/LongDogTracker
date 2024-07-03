@@ -66,7 +66,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.activity:activity-compose")
-    implementation("androidx.compose.material:material:1.5.3")
     implementation("androidx.compose.material3:material3:1.2.1")
 
 

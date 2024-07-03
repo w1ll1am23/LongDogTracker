@@ -37,6 +37,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -48,7 +49,8 @@ import com.example.longdogtracker.R
 import com.example.longdogtracker.features.episodes.ui.model.EpisodesUIState
 import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
 import com.example.longdogtracker.features.episodes.viewmodels.EpisodeViewModel
-import com.example.longdogtracker.ui.theme.BlueyBackgroundPrimary
+import com.example.longdogtracker.ui.theme.BingoBodyPrimary
+import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
 
 @Composable
 fun EpisodesScreen() {
@@ -141,7 +143,7 @@ private fun HandleUiState(uiState: EpisodesUIState) {
             if (showEpisodeSheet.value) {
                 selectedEpisode.value?.let {
                     ModalBottomSheet(
-                        containerColor = BlueyBackgroundPrimary,
+                        containerColor = if (it.title.lowercase() == "bingo") BingoBodyPrimary else BlueyBodyAccentLight,
                         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
                         sheetState = rememberModalBottomSheetState(),
                         windowInsets = WindowInsets.safeDrawing,

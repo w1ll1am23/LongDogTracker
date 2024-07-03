@@ -7,6 +7,8 @@ val BingoBodyAccentDark = Color(0xFFf5711F)
 val BingoBodyAccentLight = Color(0xFFFFF9D6)
 
 val BlueyBackgroundPrimary = Color(0xFF82C8FB)
+val AppBarBackground = Color(0xFF689abf)
+
 val BlueyBodyPrimary = Color(0xFF85C7FB)
 val BlueyBodyAccentDark = Color(0xFF3F3E66)
 val BlueyBodyAccentLight = Color(0xFFD5ECFC)

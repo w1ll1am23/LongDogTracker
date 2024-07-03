@@ -91,7 +91,7 @@ private fun HandleUiState(state: CharactersUIState) {
                 }
             }
         }
-        CharactersUIState.Loading -> {
+        is CharactersUIState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }

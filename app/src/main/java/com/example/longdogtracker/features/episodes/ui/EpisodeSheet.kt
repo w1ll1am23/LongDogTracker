@@ -1,31 +1,20 @@
 package com.example.longdogtracker.features.episodes.ui
 
-import android.graphics.drawable.shapes.RoundRectShape
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,13 +27,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
 import com.example.longdogtracker.features.episodes.viewmodels.EpisodeSheetViewModel
-import com.example.longdogtracker.features.episodes.viewmodels.EpisodeViewModel
-import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
+import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 
 @Composable
 fun EpisodeSheet(episode: UiEpisode) {
@@ -69,7 +58,10 @@ private fun HandleUiState(
     updateLongDogStatus: (Boolean) -> Unit,
     updateLongDogLocation: (String) -> Unit
 ) {
-    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         var editMode by remember {
             mutableStateOf(false)
         }
@@ -85,7 +77,11 @@ private fun HandleUiState(
                 fontWeight = FontWeight.Bold
             )
             IconButton(onClick = { editMode = true }) {
-                Icon(Icons.Default.Edit, modifier = Modifier.size(16.dp), contentDescription = "")
+                Icon(
+                    Icons.Default.Edit,
+                    modifier = Modifier.size(16.dp),
+                    contentDescription = ""
+                )
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -143,5 +139,14 @@ private fun HandleUiState(
         } else {
             Text(text = text)
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun test() {
+    LongDogTrackerPrimaryTheme {
+        HandleUiState(UiEpisode(1, "title", "description", null, 1, 1, true, false, null), {}, {})
+
     }
 }

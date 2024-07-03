@@ -8,15 +8,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
@@ -25,55 +24,62 @@ import androidx.navigation.compose.rememberNavController
 import com.example.longdogtracker.bottomnavigation.NavItem
 import com.example.longdogtracker.bottomnavigation.NavigationGraph
 import com.example.longdogtracker.bottomnavigation.MainBottomNavigation
-import com.example.longdogtracker.ui.theme.LongDogTrackerTheme
+import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
-            Box(modifier = Modifier.safeDrawingPadding()) {
-                val navController = rememberNavController()
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                LongDogTrackerTheme {
+            LongDogTrackerPrimaryTheme {
+                Box(modifier = Modifier.safeDrawingPadding()) {
+
+                    val navController = rememberNavController()
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
                     Scaffold(
-                        backgroundColor = MaterialTheme.colors.background,
                         topBar = {
-                            TopAppBar(title = { Text("Long Dog Tracker") },
-                                actions = if (navBackStackEntry?.destination?.route != NavItem.Settings.screenRoute) {
-                                    {
-                                        IconButton(onClick = {
-                                            navController.navigate(NavItem.Settings.screenRoute) {
-                                                navController.graph.startDestinationRoute?.let { screenRoute ->
-                                                    popUpTo(screenRoute) {
-                                                        saveState = true
+                            LongDogTrackerPrimaryTheme {
+                                TopAppBar(title = { Text("Long Dog Tracker") },
+                                    actions = if (navBackStackEntry?.destination?.route != NavItem.Settings.screenRoute) {
+                                        {
+                                            IconButton(onClick = {
+                                                navController.navigate(NavItem.Settings.screenRoute) {
+                                                    navController.graph.startDestinationRoute?.let { screenRoute ->
+                                                        popUpTo(screenRoute) {
+                                                            saveState = true
+                                                        }
                                                     }
+                                                    launchSingleTop = true
+                                                    restoreState = true
                                                 }
-                                                launchSingleTop = true
-                                                restoreState = true
+                                            }) {
+                                                Icon(imageVector = Icons.Default.MoreVert, null)
                                             }
-                                        }) {
-                                            Icon(imageVector = Icons.Default.MoreVert, null)
                                         }
+                                    } else {
+                                        {}
                                     }
-                                } else {
-                                    {}
-                                }
-                            )
+                                )
+                            }
                         },
                         bottomBar = {
-                            MainBottomNavigation(navController)
+                            LongDogTrackerPrimaryTheme {
+                                MainBottomNavigation(navController)
+                            }
                         }
                     ) { innerPadding ->
-                        Column(
-                            modifier = Modifier
-                                .background(MaterialTheme.colors.background)
-                                .padding(innerPadding)
-                        ) {
-                            NavigationGraph(navController = navController)
+                        LongDogTrackerPrimaryTheme {
+                            Column(
+                                modifier = Modifier
+                                    .padding(innerPadding)
+                            ) {
+                                NavigationGraph(navController = navController)
+                            }
                         }
                     }
                 }
