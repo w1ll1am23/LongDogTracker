@@ -47,7 +47,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -66,20 +65,20 @@ android {
 }
 
 dependencies {
-    implementation(platform("androidx.compose:compose-bom:2023.09.02"))
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.runtime:runtime-livedata:1.5.3")
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.8")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
-    implementation("androidx.navigation:navigation-compose:2.7.4")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.activity:activity-compose")
     implementation("androidx.compose.material3:material3:1.2.1")
 
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.13.1")
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.moshi:moshi:1.15.1")
@@ -87,13 +86,12 @@ dependencies {
     kapt("com.squareup.moshi:moshi-kotlin-codegen:1.15.1")
     implementation("io.coil-kt:coil-compose:2.6.0")
 
-    annotationProcessor("androidx.room:room-compiler:2.5.2")
+    annotationProcessor("androidx.room:room-compiler:2.6.1")
     kapt("androidx.room:room-compiler:2.5.2")
-    implementation("androidx.room:room-ktx:2.5.2")
-    kapt("androidx.hilt:hilt-compiler:1.0.0")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
     kapt("com.google.dagger:hilt-compiler:2.48.1")
     kapt("com.google.dagger:dagger-compiler:2.48.1")
     implementation("com.google.dagger:hilt-android:2.48.1")
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
