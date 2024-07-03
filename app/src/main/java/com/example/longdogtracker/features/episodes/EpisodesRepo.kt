@@ -1,7 +1,9 @@
 package com.example.longdogtracker.features.episodes
 
 import android.util.Log
+import com.example.longdogtracker.BuildConfig
 import com.example.longdogtracker.features.episodes.network.TheTvDbApi
+import com.example.longdogtracker.features.episodes.network.model.TheTvDbLoginBody
 import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
 import com.example.longdogtracker.features.episodes.ui.model.UiSeason
 import com.example.longdogtracker.features.settings.SettingsPreferences
@@ -21,46 +23,67 @@ class EpisodesRepo @Inject constructor(
     private val settingsPreferences: SettingsPreferences,
 ) {
 
+    private fun isNotLoggedIn() =
+        settingsPreferences.readStringPreference(settingOauthToken) == null
+
+    private suspend fun login() {
+        val result = theTvDbApi.getOauthToken(TheTvDbLoginBody(BuildConfig.THE_TV_DB_API_KEY)).execute()
+        if (result.isSuccessful) {
+            result.body()?.data?.token?.let {
+                settingsPreferences.writeStringPreference(settingOauthToken, it)
+            } ?: {
+                Log.e(
+                    "EpisodesRepo",
+                    "Success logging in but token wasn't in response"
+                )
+            }
+        } else {
+            Log.e(
+                "EpisodesRepo",
+                "Failed to log in. Response: ${result.code()}"
+            )
+        }
+    }
+
     suspend fun getSeasonsForSeries(): List<UiSeason> {
+        var seasonWereFetchedFromService = false
         return withContext(Dispatchers.IO) {
-            val seasons = seasonDao.getAll()
+            var seasons = seasonDao.getAll()
             // The DB is empty need to fetch from the service
             if (seasons.isEmpty()) {
-                settingsPreferences.readStringPreference(settingOauthToken)?.let { token ->
-                    val result = theTvDbApi.getSeries(token).execute()
-                    if (result.isSuccessful) {
-                        result.body()?.data?.seasons?.let { theTvDbSeasons ->
-                            val seasonsArray = theTvDbSeasons.mapNotNull {
-                                if (it.type.type == "official") {
-                                    RoomSeason(
-                                        id = it.id,
-                                        number = it.number,
-                                        type = it.type.type
-                                    )
-                                } else {
-                                    null
-                                }
-                            }.toTypedArray()
-                            seasonDao.insertAll(*seasonsArray)
-                            theTvDbSeasons.mapNotNull {
-                                if (it.type.type == "official") {
-                                    UiSeason(it.id, it.number)
-                                } else {
-                                    null
-                                }
-                            }
-                        }
-                    } else {
-                        Log.d("EpisodesRepo", "Failed to fetch data from service. Response: ${result.code()}")
-                        emptyList()
-                    }
-                } ?: run {
-                    Log.d("EpisodesRepo", "No oauth token in shared prefs")
-                    emptyList()
+                if (isNotLoggedIn()) {
+                    login()
                 }
-            } else {
-                seasons.map { UiSeason(id = it.id, number = it.number) }
+                seasonWereFetchedFromService = true
+                val result = theTvDbApi.getSeries().execute()
+                if (result.isSuccessful) {
+                    // Insert in to DB
+                    result.body()?.data?.seasons?.let { theTvDbSeasons ->
+                        val seasonsArray = theTvDbSeasons.mapNotNull {
+                            if (it.type.type == "official") {
+                                RoomSeason(
+                                    id = it.id,
+                                    number = it.number,
+                                    type = it.type.type
+                                )
+                            } else {
+                                null
+                            }
+                        }.toTypedArray()
+                        seasonDao.insertAll(*seasonsArray)
+                    }
+                } else {
+                    Log.d(
+                        "EpisodesRepo",
+                        "Failed to fetch data from service. Response: ${result.code()}"
+                    )
+                }
+
             }
+            if (seasonWereFetchedFromService) {
+                seasons = seasonDao.getAll()
+            }
+            seasons.map { UiSeason(id = it.id, number = it.number) }
         }
     }
 
@@ -86,37 +109,36 @@ class EpisodesRepo @Inject constructor(
             }
             seasonEpisodeMap.forEach { (season, episodes) ->
                 if (episodes.isEmpty()) {
-                    settingsPreferences.readStringPreference(settingOauthToken)?.let { token ->
-                        if (!hadToFetchSeason) {
-                            hadToFetchSeason = true
+                    if (!hadToFetchSeason) {
+                        hadToFetchSeason = true
+                    }
+                    Log.d(
+                        "EpisodesRepo",
+                        "Calling service to get episodes for season ${season.number}"
+                    )
+                    if (isNotLoggedIn()) {
+                        login()
+                    }
+                    val result = theTvDbApi.getSeason(season.id).execute()
+                    if (result.isSuccessful) {
+                        val longDogMap = getKnownLongDogsMap()
+                        result.body()?.data?.episodes?.let { theTvDbEpisodes ->
+                            val episodesArray = theTvDbEpisodes.map {
+                                RoomEpisode(
+                                    id = it.id,
+                                    season = it.seasonNumber,
+                                    episode = it.number,
+                                    title = it.name,
+                                    description = it.overview,
+                                    imageUrl = it.image,
+                                    hasKnownLongDog = longDogMap[it.seasonNumber]?.get(it.number) != null,
+                                    allLongDogsFound = false,
+                                    foundUnknownLongDog = false,
+                                    longDogLocation = longDogMap[it.seasonNumber]?.get(it.number)
+                                )
+                            }.toTypedArray()
+                            episodeDao.insertAll(*episodesArray)
                         }
-                        Log.d(
-                            "EpisodesRepo",
-                            "Calling service to get episodes for season ${season.number}"
-                        )
-                        val result = theTvDbApi.getSeason(token, season.id).execute()
-                        if (result.isSuccessful) {
-                            val longDogMap = getKnownLongDogsMap()
-                            result.body()?.data?.episodes?.let { theTvDbEpisodes ->
-                                val episodesArray = theTvDbEpisodes.map {
-                                    RoomEpisode(
-                                        id = it.id,
-                                        season = it.seasonNumber,
-                                        episode = it.number,
-                                        title = it.name,
-                                        description = it.overview,
-                                        imageUrl = it.image,
-                                        hasKnownLongDog = longDogMap[it.seasonNumber]?.get(it.number) != null,
-                                        allLongDogsFound = false,
-                                        foundUnknownLongDog = false,
-                                        longDogLocation = longDogMap[it.seasonNumber]?.get(it.number)
-                                    )
-                                }.toTypedArray()
-                                episodeDao.insertAll(*episodesArray)
-                            }
-                        }
-                    } ?: run {
-                        Log.d("EpisodesRepo", "No oauth token in shared prefs")
                     }
                 }
             }

@@ -115,3 +115,6 @@ lint/tmp/
 # lint/reports/
 /.idea/deploymentTargetDropDown.xml
 /.idea/inspectionProfiles/Project_Default.xml
+
+#gradle
+gradle.properties

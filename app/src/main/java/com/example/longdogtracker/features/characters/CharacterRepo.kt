@@ -31,7 +31,7 @@ class CharacterRepo @Inject constructor(
             if (characters.isEmpty()) {
                 settingsPreferences.readStringPreference(settingOauthToken)?.let { token ->
                     hadToFetchFromService = true
-                    val result = theTvDbApi.getSeries(token).execute()
+                    val result = theTvDbApi.getSeries().execute()
                     if (result.isSuccessful) {
                         result.body()?.data?.characters?.let { theTvDbCharacters ->
                             val charactersArray = theTvDbCharacters.map {

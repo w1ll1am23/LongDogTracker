@@ -3,12 +3,15 @@ package com.example.longdogtracker
 import android.content.Context
 import androidx.room.Room
 import com.example.longdogtracker.features.episodes.network.TheTvDbApi
+import com.example.longdogtracker.network.AddAuthInterceptor
+import com.example.longdogtracker.network.UnauthorizedInterceptor
 import com.example.longdogtracker.room.LongDogDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
@@ -39,7 +42,17 @@ object AppModule {
     fun provideCharacterDao(db: LongDogDatabase) = db.characterDao()
 
     @Provides
-    fun provideRetroFit() = Retrofit.Builder()
+    fun providesOkHttp(
+        authInterceptor: AddAuthInterceptor,
+        unauthorizedInterceptor: UnauthorizedInterceptor
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(authInterceptor)
+        .addInterceptor(unauthorizedInterceptor)
+        .build();
+
+    @Provides
+    fun provideRetroFit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .client(okHttpClient)
         .addConverterFactory(MoshiConverterFactory.create())
         .baseUrl("https://api4.thetvdb.com/v4/")
         .build()

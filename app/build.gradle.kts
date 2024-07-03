@@ -20,6 +20,15 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        buildConfigField(
+            "String",
+            "THE_TV_DB_API_KEY",
+            "\"${project.findProperty("THE_TV_DB_API_KEY")}\""
+        )
+
+        buildFeatures {
+            buildConfig = true
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -67,7 +76,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.activity:activity-compose")
     implementation("androidx.compose.material3:material3:1.2.1")
-
 
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
