@@ -18,8 +18,8 @@ class EpisodeSheetViewModel @Inject constructor(private val episodesRepo: Episod
         this.uiEpisode = uiEpisode
     }
 
-    fun updateLongDogStatus(found: Boolean) {
-        updateEpisode(uiEpisode.copy(foundLongDog = found))
+    fun updateLongDogStatus(found: Int) {
+        updateEpisode(uiEpisode.copy(longDogsFound = found))
     }
 
     fun updateLongDogLocation(location: String) {

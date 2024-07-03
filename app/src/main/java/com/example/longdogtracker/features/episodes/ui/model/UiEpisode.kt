@@ -7,7 +7,7 @@ data class UiEpisode(
     val imageUrl: String?,
     val season: Int,
     val episode: Int,
-    val hasKnownLongDog: Boolean,
-    val foundLongDog: Boolean,
+    val knownLongDogCount: Int,
+    val longDogsFound: Int,
     val longDogLocation: String?
 )

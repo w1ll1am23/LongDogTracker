@@ -86,8 +86,8 @@ class EpisodesRepo @Inject constructor(
                         description = it.description,
                         imageUrl = it.imageUrl,
                         season = it.season,
-                        hasKnownLongDog = it.hasKnownLongDog,
-                        foundLongDog = it.allLongDogsFound,
+                        knownLongDogCount = it.knownLongDogCount,
+                        longDogsFound = it.longDogsFound,
                         longDogLocation = it.longDogLocation,
                         episode = it.episode
                     )
@@ -122,9 +122,8 @@ class EpisodesRepo @Inject constructor(
                                     title = it.name,
                                     description = it.overview,
                                     imageUrl = it.image,
-                                    hasKnownLongDog = longDogMap[it.seasonNumber]?.get(it.number) != null,
-                                    allLongDogsFound = false,
-                                    foundUnknownLongDog = false,
+                                    knownLongDogCount = if (longDogMap[it.seasonNumber]?.get(it.number) != null) 1 else 0,
+                                    longDogsFound = 0,
                                     longDogLocation = longDogMap[it.seasonNumber]?.get(it.number)
                                 )
                             }.toTypedArray()
@@ -146,8 +145,8 @@ class EpisodesRepo @Inject constructor(
                             description = it.description,
                             imageUrl = it.imageUrl,
                             season = it.season,
-                            hasKnownLongDog = it.hasKnownLongDog,
-                            foundLongDog = it.allLongDogsFound,
+                            knownLongDogCount = it.knownLongDogCount,
+                            longDogsFound = it.longDogsFound,
                             longDogLocation = it.longDogLocation,
                             episode = it.episode,
                         )
@@ -162,7 +161,7 @@ class EpisodesRepo @Inject constructor(
         withContext(Dispatchers.IO) {
             val episode = episodeDao.getEpisodeById(uiEpisode.id)
             val updatedEpisode = episode.copy(
-                allLongDogsFound = uiEpisode.foundLongDog,
+                longDogsFound = uiEpisode.longDogsFound,
                 longDogLocation = uiEpisode.longDogLocation
             )
             episodeDao.updateEpisode(updatedEpisode)

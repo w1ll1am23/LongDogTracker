@@ -41,4 +41,8 @@ class EpisodeViewModel @Inject constructor(private val episodesRepo: EpisodesRep
                 }
         }
     }
+
+    fun sheetDismissed() {
+        loadInitialData()
+    }
 }

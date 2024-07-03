@@ -11,11 +11,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,6 +35,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
 import com.example.longdogtracker.features.episodes.viewmodels.EpisodeSheetViewModel
+import com.example.longdogtracker.ui.theme.BlueyBodyAccentDark
+import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
+import com.example.longdogtracker.ui.theme.BlueyBodySnout
 import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 
 @Composable
@@ -55,7 +60,7 @@ fun EpisodeSheet(episode: UiEpisode) {
 @Composable
 private fun HandleUiState(
     episode: UiEpisode,
-    updateLongDogStatus: (Boolean) -> Unit,
+    updateLongDogStatus: (Int) -> Unit,
     updateLongDogLocation: (String) -> Unit
 ) {
     Column(
@@ -87,29 +92,18 @@ private fun HandleUiState(
         Row(verticalAlignment = Alignment.CenterVertically) {
 
             val color = when {
-                episode.foundLongDog -> Color.Green
-                episode.hasKnownLongDog -> Color.LightGray
+                episode.longDogsFound > 0 -> BlueyBodySnout
+                episode.knownLongDogCount > 0 && episode.longDogsFound == 0 -> Color.LightGray
                 else -> Color.Black
             }
             val longDogStatus = when {
-                episode.foundLongDog -> "Found"
-                episode.hasKnownLongDog -> "Not Found"
+                episode.longDogsFound > 0 -> "Found"
+                episode.knownLongDogCount > 0 && episode.longDogsFound == 0 -> "Not Found"
                 else -> "Unknown"
             }
             if (editMode) {
-                IconButton(onClick = { updateLongDogStatus(false) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.long_dog_black),
-                        contentDescription = "",
-                        tint = Color.LightGray
-                    )
-                }
-                IconButton(onClick = { updateLongDogStatus(true) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.long_dog_black),
-                        contentDescription = "",
-                        tint = Color.Green
-                    )
+                LongDogStepper(count = episode.longDogsFound) { count ->
+                    updateLongDogStatus(count)
                 }
             } else {
                 Image(
@@ -142,11 +136,87 @@ private fun HandleUiState(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun test() {
-    LongDogTrackerPrimaryTheme {
-        HandleUiState(UiEpisode(1, "title", "description", null, 1, 1, true, false, null), {}, {})
+fun LongDogStepper(count: Int, updateQuantity: (Int) -> Unit) {
+    val currentCount = remember {
+        mutableIntStateOf(count)
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        IconButton(
+            enabled = currentCount.intValue != 0,
+            onClick = {
+                currentCount.intValue -= 1
+                updateQuantity(currentCount.intValue)
+            },
+            colors = IconButtonColors(
+                containerColor = BlueyBodyAccentDark,
+                contentColor = BlueyBodyAccentLight,
+                disabledContentColor = Color.LightGray,
+                disabledContainerColor = Color.Gray
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.remove),
+                contentDescription = "",
+                tint = BlueyBodyAccentLight
+            )
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            val dogColor = when {
+                currentCount.intValue == 0 -> {
+                    Color.LightGray
+                }
+                else -> {
+                    BlueyBodySnout
+                }
+            }
+            Image(
+                painter = painterResource(id = R.drawable.long_dog_black),
+                colorFilter = ColorFilter.tint(dogColor),
+                modifier = Modifier.size(32.dp),
+                contentDescription = null,
+            )
+            Text(currentCount.intValue.toString())
+        }
 
+        IconButton(
+            onClick = {
+                currentCount.intValue += 1
+                updateQuantity(currentCount.intValue)
+            },
+            colors = IconButtonColors(
+                containerColor = BlueyBodyAccentDark,
+                contentColor = BlueyBodyAccentLight,
+                disabledContentColor = Color.LightGray,
+                disabledContainerColor = Color.Gray
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.add),
+                contentDescription = "",
+                tint = BlueyBodyAccentLight
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LongDogStepperPreview() {
+    LongDogTrackerPrimaryTheme {
+        Column {
+            LongDogStepper(0, {})
+            LongDogStepper(1, {})
+
+        }
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun LongDogSheetPreview() {
+    LongDogTrackerPrimaryTheme {
+        HandleUiState(UiEpisode(1, "title", "description", null, 1, 1, 1, 0, null), {}, {})
     }
 }

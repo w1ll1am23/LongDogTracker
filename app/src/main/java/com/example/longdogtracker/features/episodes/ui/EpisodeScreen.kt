@@ -52,6 +52,7 @@ import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
 import com.example.longdogtracker.features.episodes.viewmodels.EpisodeViewModel
 import com.example.longdogtracker.ui.theme.BingoBodyPrimary
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
+import com.example.longdogtracker.ui.theme.BlueyBodySnout
 
 @Composable
 fun EpisodesScreen() {
@@ -59,7 +60,7 @@ fun EpisodesScreen() {
 
     val uiState = viewModel.episodesStateFlow.collectAsState()
 
-    HandleUiState(uiState = uiState.value)
+    HandleUiState(uiState = uiState.value, viewModel::sheetDismissed)
 
     LaunchedEffect(key1 = null) {
         viewModel.loadInitialData()
@@ -68,13 +69,14 @@ fun EpisodesScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HandleUiState(uiState: EpisodesUIState) {
+private fun HandleUiState(uiState: EpisodesUIState, sheetDismissed: () -> Unit) {
     when (uiState) {
         EpisodesUIState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
+
         is EpisodesUIState.Episodes -> {
             val showEpisodeSheet = remember {
                 mutableStateOf(false)
@@ -98,8 +100,8 @@ private fun HandleUiState(uiState: EpisodesUIState) {
                             ) {
                                 Column(Modifier.padding(16.dp)) {
                                     val color = when {
-                                        episode.foundLongDog -> Color.Green
-                                        episode.hasKnownLongDog -> Color.LightGray
+                                        episode.longDogsFound > 0 -> BlueyBodySnout
+                                        episode.knownLongDogCount > 0 && episode.longDogsFound == 0 -> Color.LightGray
                                         else -> Color.Black
                                     }
                                     Row(
@@ -154,7 +156,10 @@ private fun HandleUiState(uiState: EpisodesUIState) {
                         sheetState = rememberModalBottomSheetState(),
                         windowInsets = WindowInsets.safeDrawing,
                         dragHandle = { BottomSheetDefaults.HiddenShape },
-                        onDismissRequest = { showEpisodeSheet.value = false }) {
+                        onDismissRequest = {
+                            showEpisodeSheet.value = false
+                            sheetDismissed.invoke()
+                        }) {
                         EpisodeSheet(episode = it)
                     }
                 }
