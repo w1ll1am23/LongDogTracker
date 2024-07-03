@@ -9,6 +9,10 @@
     <string name="setting_clear_cache_button">CLEAR CACHE</string>
     <string name="setting_save_button">SAVE</string>
 
+    <!-- Menu-->
+    <string name="menu_settings">Settings</string>
+    <string name="menu_filter_sort">Filter/Sort</string>
+
     <!-- Navigation-->
     <string name="navigation_episodes">Episodes</string>
     <string name="navigation_characters">Characters</string>

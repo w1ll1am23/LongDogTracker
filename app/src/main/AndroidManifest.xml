@@ -16,7 +16,7 @@
         android:theme="@style/Theme.LongDogTracker"
         tools:targetApi="31">
         <activity
-            android:name="com.example.longdogtracker.MainActivity"
+            android:name="com.example.longdogtracker.features.main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.LongDogTracker">
             <intent-filter>
