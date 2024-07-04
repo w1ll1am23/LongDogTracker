@@ -1,12 +1,8 @@
 package com.example.longdogtracker.features.main
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
@@ -17,10 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,22 +21,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
 import com.example.longdogtracker.R
-import com.example.longdogtracker.bottomnavigation.NavItem
 import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LongDogTopBar(navController: NavController, navBackStackEntry: NavBackStackEntry?) {
+fun LongDogTopBar(navigate: (TopBarNavigation) -> Unit) {
     TopAppBar(title = {
         var query by remember {
             mutableStateOf("")
@@ -71,32 +58,20 @@ fun LongDogTopBar(navController: NavController, navBackStackEntry: NavBackStackE
             singleLine = true
         )
     },
-        actions = if (navBackStackEntry?.destination?.route != NavItem.Settings.screenRoute) {
-            {
-                LongDogTopBarActionView {
-                    navController.navigate(NavItem.Settings.screenRoute) {
-                        navController.graph.startDestinationRoute?.let { screenRoute ->
-                            popUpTo(screenRoute) {
-                                saveState = true
-                            }
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
+        actions = {
+            LongDogTopBarActionView { topBarNavigation ->
+                navigate.invoke(topBarNavigation)
             }
-        } else {
-            {}
         }
     )
 }
 
 @Composable
-private fun LongDogTopBarActionView(navigate: () -> Unit) {
+private fun LongDogTopBarActionView(navigate: (TopBarNavigation) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Row {
         IconButton(onClick = {
-            expanded = true
+            navigate(TopBarNavigation.FILTER)
         }) {
             Icon(painter = painterResource(id = R.drawable.filter), null)
         }
@@ -112,9 +87,14 @@ private fun LongDogTopBarActionView(navigate: () -> Unit) {
     ) {
         DropdownMenuItem(
             text = { Text(stringResource(id = R.string.menu_settings)) },
-            onClick = { navigate.invoke() }
+            onClick = { navigate(TopBarNavigation.SETTINGS) }
         )
     }
+}
+
+enum class TopBarNavigation {
+    SETTINGS,
+    FILTER
 }
 
 @Preview(showBackground = true)

@@ -26,7 +26,17 @@ fun NavigationGraph(
                 animationSpec = tween(600)
             )
         }) {
-            EpisodesScreen()
+            EpisodesScreen {
+                navController.navigate(NavItem.Settings.screenRoute) {
+                    navController.graph.startDestinationRoute?.let { screenRoute ->
+                        popUpTo(screenRoute) {
+                            saveState = true
+                        }
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
         }
 
         composable(NavItem.Characters.screenRoute, enterTransition = {

@@ -8,7 +8,8 @@ import javax.inject.Singleton
 
 @Singleton
 class SettingsPreferences @Inject constructor(@ApplicationContext context: Context) {
-    private val preferences: SharedPreferences = context.getSharedPreferences("SettingsPreferences", Context.MODE_PRIVATE)
+    private val preferences: SharedPreferences =
+        context.getSharedPreferences("SettingsPreferences", Context.MODE_PRIVATE)
 
     fun readBooleanPreference(pref: String): Boolean {
         return preferences.getBoolean(pref, false)
@@ -18,6 +19,19 @@ class SettingsPreferences @Inject constructor(@ApplicationContext context: Conte
         with(preferences.edit()) {
             putBoolean(pref, value)
             apply()
+        }
+    }
+
+    fun writeIntListPreference(pref: String, value: List<Int>) {
+        with(preferences.edit()) {
+            putStringSet(pref, value.map { it.toString() }.toSet())
+            apply()
+        }
+    }
+
+    fun readIntListPreference(pref: String): List<Int>? {
+        return preferences.getStringSet(pref, null)?.let { stringSet ->
+            stringSet.map { it.toInt() }
         }
     }
 

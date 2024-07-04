@@ -4,6 +4,8 @@ import com.example.longdogtracker.R
 
 const val settingOauthToken = "OAUTH_TOKEN"
 const val settingResetCache = "RESET_CACHE"
+const val settingSeasonFilter = "SEASON_FILTER"
+
 
 val oauthToken = Setting(
     id = settingOauthToken,

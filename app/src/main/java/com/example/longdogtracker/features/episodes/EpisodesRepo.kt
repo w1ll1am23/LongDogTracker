@@ -2,14 +2,12 @@ package com.example.longdogtracker.features.episodes
 
 import android.util.Log
 import androidx.annotation.StringRes
-import com.example.longdogtracker.BuildConfig
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.episodes.network.TheTvDbApi
-import com.example.longdogtracker.features.episodes.network.model.TheTvDbLoginBody
 import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
 import com.example.longdogtracker.features.episodes.ui.model.UiSeason
 import com.example.longdogtracker.features.settings.SettingsPreferences
-import com.example.longdogtracker.features.settings.model.settingOauthToken
+import com.example.longdogtracker.features.settings.model.settingSeasonFilter
 import com.example.longdogtracker.network.LoginServiceInteractor
 import com.example.longdogtracker.room.EpisodeDao
 import com.example.longdogtracker.room.RoomEpisode
@@ -27,10 +25,21 @@ class EpisodesRepo @Inject constructor(
     private val loginServiceInteractor: LoginServiceInteractor,
 ) {
 
-    suspend fun getSeasonsForSeries(): GetSeasonsResult {
+    suspend fun getSeasonsForSeries(ignoreFilters: Boolean = false): GetSeasonsResult {
         var seasonWereFetchedFromService = false
         return withContext(Dispatchers.IO) {
-            var seasons = seasonDao.getAll()
+            val filterSeasons = settingsPreferences.readIntListPreference(
+                settingSeasonFilter
+            )
+            var seasons = if (ignoreFilters) {
+                seasonDao.getAll()
+            } else {
+                filterSeasons?.let {
+                    seasonDao.getSeasons(it)
+                } ?: run {
+                    seasonDao.getAll()
+                }
+            }
             // The DB is empty need to fetch from the service
             if (seasons.isEmpty()) {
                 if (loginServiceInteractor.isNotLoggedIn()) {
