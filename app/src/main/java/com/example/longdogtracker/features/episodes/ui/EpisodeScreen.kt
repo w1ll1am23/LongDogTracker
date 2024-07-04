@@ -1,6 +1,8 @@
 package com.example.longdogtracker.features.episodes.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,7 +69,7 @@ fun EpisodesScreen() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun HandleUiState(uiState: EpisodesUIState, sheetDismissed: () -> Unit) {
     when (uiState) {
@@ -86,63 +88,77 @@ private fun HandleUiState(uiState: EpisodesUIState, sheetDismissed: () -> Unit) 
             }
             LazyColumn {
                 uiState.seasonEpisodeMap.forEach { (season, episodes) ->
-                    if (season.number != 0) {
-                        items(episodes) { episode ->
-                            Card(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .clickable {
-                                        selectedEpisode.value = episode
-                                        showEpisodeSheet.value = true
-                                    },
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                shape = RoundedCornerShape(size = 16.dp)
-                            ) {
-                                Column(Modifier.padding(16.dp)) {
-                                    val color = when {
-                                        episode.longDogsFound > 0 -> BlueyBodySnout
-                                        episode.knownLongDogCount > 0 && episode.longDogsFound == 0 -> Color.LightGray
-                                        else -> Color.Black
-                                    }
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            episode.title,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = TextUnit(16F, TextUnitType.Sp)
-                                        )
-                                        Image(
-                                            painter = painterResource(id = R.drawable.long_dog_black),
-                                            colorFilter = ColorFilter.tint(color),
-                                            modifier = Modifier.size(32.dp),
-                                            contentDescription = null,
-                                        )
-                                    }
+                    stickyHeader {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(BlueyBodyAccentLight)
+                        ) {
+                            Text("Season: ${season.number}", modifier = Modifier.padding(16.dp))
+                            Text(
+                                text = "${episodes.size} episodes",
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+
+                    items(episodes) { episode ->
+                        Card(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .clickable {
+                                    selectedEpisode.value = episode
+                                    showEpisodeSheet.value = true
+                                },
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            shape = RoundedCornerShape(size = 16.dp)
+                        ) {
+                            Column(Modifier.padding(16.dp)) {
+                                val color = when {
+                                    episode.longDogsFound > 0 -> BlueyBodySnout
+                                    episode.knownLongDogCount > 0 && episode.longDogsFound == 0 -> Color.LightGray
+                                    else -> Color.Black
+                                }
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
                                     Text(
-                                        "Season: ${episode.season} Episode: ${episode.episode}",
+                                        episode.title,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = TextUnit(16F, TextUnitType.Sp)
                                     )
-                                    AsyncImage(
-                                        modifier = Modifier
-                                            .padding(vertical = 8.dp)
-                                            .fillMaxWidth(),
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data(episode.imageUrl)
-                                            .memoryCachePolicy(CachePolicy.ENABLED)
-                                            .diskCachePolicy(CachePolicy.ENABLED)
-                                            .crossfade(true)
-                                            .build(),
-                                        contentScale = ContentScale.FillWidth,
+                                    Image(
+                                        painter = painterResource(id = R.drawable.long_dog_black),
+                                        colorFilter = ColorFilter.tint(color),
+                                        modifier = Modifier.size(32.dp),
                                         contentDescription = null,
                                     )
-                                    Text(
-                                        episode.description,
-                                        fontSize = TextUnit(13F, TextUnitType.Sp)
-                                    )
                                 }
+                                Text(
+                                    "Season: ${episode.season} Episode: ${episode.episode}",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = TextUnit(16F, TextUnitType.Sp)
+                                )
+                                AsyncImage(
+                                    modifier = Modifier
+                                        .padding(vertical = 8.dp)
+                                        .fillMaxWidth(),
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(episode.imageUrl)
+                                        .memoryCachePolicy(CachePolicy.ENABLED)
+                                        .diskCachePolicy(CachePolicy.ENABLED)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentScale = ContentScale.FillWidth,
+                                    contentDescription = null,
+                                )
+                                Text(
+                                    episode.description,
+                                    fontSize = TextUnit(13F, TextUnitType.Sp)
+                                )
                             }
                         }
                     }

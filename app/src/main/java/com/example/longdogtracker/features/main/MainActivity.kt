@@ -35,10 +35,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             LongDogTrackerPrimaryTheme {
                 Box(modifier = Modifier.safeDrawingPadding()) {
-
                     val navController = rememberNavController()
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
-
                     Scaffold(
                         topBar = {
                             LongDogTrackerPrimaryTheme {
