@@ -1,4 +1,4 @@
-package com.example.longdogtracker.features.episodes.ui
+package com.example.longdogtracker.features.media.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -33,8 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.longdogtracker.R
-import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
-import com.example.longdogtracker.features.episodes.viewmodels.EpisodeSheetViewModel
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
+import com.example.longdogtracker.features.media.viewmodels.MediaSheetViewModel
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentDark
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
 import com.example.longdogtracker.ui.theme.BlueyBodySnout
@@ -42,7 +42,7 @@ import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 
 @Composable
 fun EpisodeSheet(episode: UiEpisode) {
-    val viewModel = hiltViewModel<EpisodeSheetViewModel>()
+    val viewModel = hiltViewModel<MediaSheetViewModel>()
 
     HandleUiState(
         episode = episode,

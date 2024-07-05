@@ -1,4 +1,4 @@
-package com.example.longdogtracker.features.episodes.ui.model
+package com.example.longdogtracker.features.media.ui.model
 
 data class UiEpisode(
     val id: Int,

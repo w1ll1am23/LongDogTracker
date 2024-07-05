@@ -1,4 +1,4 @@
-package com.example.longdogtracker.features.episodes.ui
+package com.example.longdogtracker.features.media.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -50,11 +50,11 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.longdogtracker.R
-import com.example.longdogtracker.features.episodes.ui.model.EpisodesUIState
-import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
-import com.example.longdogtracker.features.episodes.viewmodels.EpisodeViewModel
 import com.example.longdogtracker.features.main.LongDogTopBar
 import com.example.longdogtracker.features.main.TopBarNavigation
+import com.example.longdogtracker.features.media.ui.model.MediaUIState
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
+import com.example.longdogtracker.features.media.viewmodels.MediaViewModel
 import com.example.longdogtracker.ui.theme.BingoBodyPrimary
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
 import com.example.longdogtracker.ui.theme.BlueyBodySnout
@@ -62,8 +62,8 @@ import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EpisodesScreen(navigate: () -> Unit) {
-    val viewModel = hiltViewModel<EpisodeViewModel>()
+fun MediaScreen(navigate: () -> Unit) {
+    val viewModel = hiltViewModel<MediaViewModel>()
 
     val uiState = viewModel.episodesStateFlow.collectAsState()
 
@@ -71,16 +71,17 @@ fun EpisodesScreen(navigate: () -> Unit) {
         mutableStateOf(false)
     }
 
-    HandleUiState(uiState = uiState.value, viewModel::sheetDismissed) { topBarNavigation ->
+    HandleUiState(uiState = uiState.value, viewModel::sheetDismissed, { topBarNavigation ->
         when (topBarNavigation) {
             TopBarNavigation.SETTINGS -> {
                 navigate.invoke()
             }
+
             TopBarNavigation.FILTER -> {
                 showFilterSheet.value = true
             }
         }
-    }
+    }, viewModel::search)
 
     if (showFilterSheet.value) {
         ModalBottomSheet(
@@ -104,23 +105,28 @@ fun EpisodesScreen(navigate: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-private fun HandleUiState(uiState: EpisodesUIState, sheetDismissed: () -> Unit, topBarNavigate: (TopBarNavigation) -> Unit) {
+private fun HandleUiState(
+    uiState: MediaUIState,
+    sheetDismissed: () -> Unit,
+    topBarNavigate: (TopBarNavigation) -> Unit,
+    search: (String) -> Unit,
+) {
     Scaffold(
         topBar = {
             LongDogTrackerPrimaryTheme {
-                LongDogTopBar(topBarNavigate)
+                LongDogTopBar(topBarNavigate, search)
             }
         },
     ) { contentPadding ->
         Box(modifier = Modifier.padding(contentPadding)) {
             when (uiState) {
-                EpisodesUIState.Loading -> {
+                MediaUIState.Loading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
 
-                is EpisodesUIState.Episodes -> {
+                is MediaUIState.Media -> {
                     val showEpisodeSheet = remember {
                         mutableStateOf(false)
                     }
@@ -128,6 +134,74 @@ private fun HandleUiState(uiState: EpisodesUIState, sheetDismissed: () -> Unit, 
                         mutableStateOf<UiEpisode?>(null)
                     }
                     LazyColumn {
+                        if (uiState.movies.isNotEmpty()) {
+                            stickyHeader {
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(BlueyBodyAccentLight)
+                                ) {
+                                    Text(
+                                        "Movies",
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+                            }
+                            items(uiState.movies) { movie ->
+                                Card(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .clickable {
+                                        },
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                                    shape = RoundedCornerShape(size = 16.dp)
+                                ) {
+                                    Column(Modifier.padding(16.dp)) {
+                                        val color = when {
+                                            movie.longDogsFound > 0 -> BlueyBodySnout
+                                            movie.knownLongDogCount > 0 && movie.longDogsFound == 0 -> Color.LightGray
+                                            else -> Color.Black
+                                        }
+                                        Row(
+                                            Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                movie.title,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = TextUnit(16F, TextUnitType.Sp)
+                                            )
+                                            Image(
+                                                painter = painterResource(id = R.drawable.long_dog_black),
+                                                colorFilter = ColorFilter.tint(color),
+                                                modifier = Modifier.size(32.dp),
+                                                contentDescription = null,
+                                            )
+                                        }
+                                        AsyncImage(
+                                            modifier = Modifier
+                                                .padding(vertical = 8.dp)
+                                                .fillMaxWidth(),
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(movie.imageUrl)
+                                                .memoryCachePolicy(CachePolicy.ENABLED)
+                                                .diskCachePolicy(CachePolicy.ENABLED)
+                                                .crossfade(true)
+                                                .build(),
+                                            contentScale = ContentScale.FillWidth,
+                                            contentDescription = null,
+                                        )
+                                        Text(
+                                            movie.description,
+                                            fontSize = TextUnit(13F, TextUnitType.Sp)
+                                        )
+                                    }
+                                }
+                            }
+
+                        }
                         uiState.seasonEpisodeMap.forEach { (season, episodes) ->
                             stickyHeader {
                                 Row(
@@ -137,15 +211,19 @@ private fun HandleUiState(uiState: EpisodesUIState, sheetDismissed: () -> Unit, 
                                         .fillMaxWidth()
                                         .background(BlueyBodyAccentLight)
                                 ) {
-                                    if (season.number == 0) {
-                                        Text("Specials", modifier = Modifier.padding(16.dp))
-
-                                    } else {
-                                        Text(
-                                            "Season: ${season.number}",
-                                            modifier = Modifier.padding(16.dp)
-                                        )
-
+                                    when (season.number) {
+                                        0 -> {
+                                            Text("Specials", modifier = Modifier.padding(16.dp))
+                                        }
+                                        999 -> {
+                                            Text("Results", modifier = Modifier.padding(16.dp))
+                                        }
+                                        else -> {
+                                            Text(
+                                                "Season: ${season.number}",
+                                                modifier = Modifier.padding(16.dp)
+                                            )
+                                        }
                                     }
                                     Text(
                                         text = "${episodes.size} episodes",
@@ -232,7 +310,7 @@ private fun HandleUiState(uiState: EpisodesUIState, sheetDismissed: () -> Unit, 
                     }
                 }
 
-                is EpisodesUIState.Error -> {
+                is MediaUIState.Error -> {
                     val showError = remember {
                         mutableStateOf(true)
                     }

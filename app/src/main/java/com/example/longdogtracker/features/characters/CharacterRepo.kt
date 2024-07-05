@@ -1,21 +1,13 @@
 package com.example.longdogtracker.features.characters
 
-import android.util.Log
 import androidx.annotation.StringRes
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.characters.model.UiCharacter
-import com.example.longdogtracker.features.episodes.network.TheTvDbApi
-import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
-import com.example.longdogtracker.features.episodes.ui.model.UiSeason
+import com.example.longdogtracker.features.media.network.TheTvDbApi
 import com.example.longdogtracker.features.settings.SettingsPreferences
-import com.example.longdogtracker.features.settings.model.settingOauthToken
 import com.example.longdogtracker.network.LoginServiceInteractor
 import com.example.longdogtracker.room.CharacterDao
-import com.example.longdogtracker.room.EpisodeDao
 import com.example.longdogtracker.room.RoomCharacter
-import com.example.longdogtracker.room.RoomEpisode
-import com.example.longdogtracker.room.RoomSeason
-import com.example.longdogtracker.room.SeasonDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

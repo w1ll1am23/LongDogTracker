@@ -1,11 +1,12 @@
-package com.example.longdogtracker.features.episodes.viewmodels
+package com.example.longdogtracker.features.media.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.longdogtracker.features.episodes.EpisodesRepo
-import com.example.longdogtracker.features.episodes.ui.model.EpisodeFilterSheetUIState
-import com.example.longdogtracker.features.episodes.ui.model.Season
+import com.example.longdogtracker.features.media.EpisodesRepo
+import com.example.longdogtracker.features.media.ui.model.EpisodeFilterSheetUIState
+import com.example.longdogtracker.features.media.ui.model.Season
 import com.example.longdogtracker.features.settings.SettingsPreferences
+import com.example.longdogtracker.features.settings.model.settingMovieFilter
 import com.example.longdogtracker.features.settings.model.settingSeasonFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class EpisodeFilterSheetViewModel @Inject constructor(
+class MediaFilterSheetViewModel @Inject constructor(
     private val settingsPreferences: SettingsPreferences,
     private val episodesRepo: EpisodesRepo
 ) : ViewModel() {
@@ -25,8 +26,9 @@ class EpisodeFilterSheetViewModel @Inject constructor(
     val episodeFilterStateFlow: StateFlow<EpisodeFilterSheetUIState> = episodeFilterMutableStateFlow
 
     private var seasons: List<Season> = emptyList()
+    private var showMovies: Boolean = false
 
-    fun filter(seasonNumber: Int, selected: Boolean) {
+    fun filterSeason(seasonNumber: Int, selected: Boolean) {
         val newSeasons: MutableList<Season> = mutableListOf()
         seasons.forEach {
             if (it.number == seasonNumber) {
@@ -40,12 +42,21 @@ class EpisodeFilterSheetViewModel @Inject constructor(
         settingsPreferences.writeIntListPreference(
             settingSeasonFilter,
             seasons.filter { it.selected }.map { it.number })
+
         episodeFilterMutableStateFlow.value =
-            EpisodeFilterSheetUIState.Filters(seasons)
+            EpisodeFilterSheetUIState.Filters(seasons, showMovies)
+    }
+
+    fun showMovies(filter: Boolean) {
+        settingsPreferences.writeBooleanPreference(settingMovieFilter, filter)
+        showMovies = filter
+        episodeFilterMutableStateFlow.value =
+            EpisodeFilterSheetUIState.Filters(seasons, showMovies)
     }
 
     fun getFilterValues() {
         viewModelScope.launch {
+            showMovies = settingsPreferences.readBooleanPreference(settingMovieFilter)
             val seasonNumbers = when (val result = episodesRepo.getSeasonsForSeries(ignoreFilters = true)) {
                 is EpisodesRepo.GetSeasonsResult.Seasons -> {
                     result.seasons.map { it.number }.toList()
@@ -60,7 +71,7 @@ class EpisodeFilterSheetViewModel @Inject constructor(
                 settingsPreferences.readIntListPreference(settingSeasonFilter) ?: seasonNumbers
             seasons = seasonNumbers.map { Season(it, seasonFilter.contains(it)) }
             episodeFilterMutableStateFlow.value =
-                EpisodeFilterSheetUIState.Filters(seasons)
+                EpisodeFilterSheetUIState.Filters(seasons, showMovies)
         }
 
     }

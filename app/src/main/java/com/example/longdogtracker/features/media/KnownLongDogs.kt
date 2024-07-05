@@ -1,4 +1,4 @@
-package com.example.longdogtracker.features.episodes
+package com.example.longdogtracker.features.media
 
 class KnownLongDogs {
     val seasonOne = mapOf(

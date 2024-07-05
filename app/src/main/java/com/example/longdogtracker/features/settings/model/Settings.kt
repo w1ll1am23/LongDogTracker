@@ -5,6 +5,11 @@ import com.example.longdogtracker.R
 const val settingOauthToken = "OAUTH_TOKEN"
 const val settingResetCache = "RESET_CACHE"
 const val settingSeasonFilter = "SEASON_FILTER"
+const val settingMovieFilter = "MOVIE_FILTER"
+const val settingLastFetchSeasonsFromService = "LAST_FETCH_SEASONS_FROM_SERVICE"
+const val settingLastFetchEpisodesFromService = "LAST_FETCH_EPISODES_FROM_SERVICE"
+const val settingLastFetchMoviesFromService = "LAST_FETCH_MOVIES_FROM_SERVICE"
+
 
 
 val oauthToken = Setting(
@@ -20,6 +25,5 @@ val resetCache = Setting(
     description = R.string.setting_reset_cache_description,
     type = SettingType.RESET
 )
-
 
 val allSettingsList = listOf(oauthToken, resetCache)

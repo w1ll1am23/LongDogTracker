@@ -2,7 +2,7 @@ package com.example.longdogtracker
 
 import android.content.Context
 import androidx.room.Room
-import com.example.longdogtracker.features.episodes.network.TheTvDbApi
+import com.example.longdogtracker.features.media.network.TheTvDbApi
 import com.example.longdogtracker.network.AddAuthInterceptor
 import com.example.longdogtracker.network.UnauthorizedInterceptor
 import com.example.longdogtracker.room.LongDogDatabase
@@ -40,6 +40,10 @@ object AppModule {
     @Singleton
     @Provides
     fun provideCharacterDao(db: LongDogDatabase) = db.characterDao()
+
+    @Singleton
+    @Provides
+    fun provideMovieDao(db: LongDogDatabase) = db.movieDao()
 
     @Provides
     fun providesOkHttp(

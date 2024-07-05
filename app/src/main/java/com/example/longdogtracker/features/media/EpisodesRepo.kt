@@ -1,12 +1,14 @@
-package com.example.longdogtracker.features.episodes
+package com.example.longdogtracker.features.media
 
 import android.util.Log
 import androidx.annotation.StringRes
 import com.example.longdogtracker.R
-import com.example.longdogtracker.features.episodes.network.TheTvDbApi
-import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
-import com.example.longdogtracker.features.episodes.ui.model.UiSeason
+import com.example.longdogtracker.features.media.network.TheTvDbApi
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
+import com.example.longdogtracker.features.media.ui.model.UiSeason
 import com.example.longdogtracker.features.settings.SettingsPreferences
+import com.example.longdogtracker.features.settings.model.settingLastFetchEpisodesFromService
+import com.example.longdogtracker.features.settings.model.settingLastFetchSeasonsFromService
 import com.example.longdogtracker.features.settings.model.settingSeasonFilter
 import com.example.longdogtracker.network.LoginServiceInteractor
 import com.example.longdogtracker.room.EpisodeDao
@@ -15,6 +17,10 @@ import com.example.longdogtracker.room.RoomSeason
 import com.example.longdogtracker.room.SeasonDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
 class EpisodesRepo @Inject constructor(
@@ -31,17 +37,18 @@ class EpisodesRepo @Inject constructor(
             val filterSeasons = settingsPreferences.readIntListPreference(
                 settingSeasonFilter
             )
-            var seasons = if (ignoreFilters) {
-                seasonDao.getAll()
-            } else {
-                filterSeasons?.let {
-                    seasonDao.getSeasons(it)
-                } ?: run {
-                    seasonDao.getAll()
-                }
-            }
+            var seasons = seasonDao.getAll()
+            val lastServiceFetch =
+                settingsPreferences.readLongPreference(settingLastFetchSeasonsFromService)
+            val shouldRefresh = lastServiceFetch?.let {
+                val then = ZonedDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
+                val now = ZonedDateTime.now(
+                    ZoneId.systemDefault()
+                )
+                Duration.between(then, now).toDays() > 1
+            } ?: true
             // The DB is empty need to fetch from the service
-            if (seasons.isEmpty()) {
+            if (seasons.isEmpty() || shouldRefresh) {
                 if (loginServiceInteractor.isNotLoggedIn()) {
                     when (val result = loginServiceInteractor.login()) {
                         LoginServiceInteractor.LoginStatus.Success -> Unit
@@ -56,18 +63,23 @@ class EpisodesRepo @Inject constructor(
                 if (result.isSuccessful) {
                     // Insert in to DB
                     result.body()?.data?.seasons?.let { theTvDbSeasons ->
-                        val seasonsArray = theTvDbSeasons.mapNotNull {
-                            if (it.type.type == "official") {
+                        val seasonsArray = theTvDbSeasons.mapNotNull { theTvDbSeason ->
+                            if (theTvDbSeason.type.type == "official" && seasons.find { it.number == theTvDbSeason.number } == null) {
                                 RoomSeason(
-                                    id = it.id,
-                                    number = it.number,
-                                    type = it.type.type
+                                    id = theTvDbSeason.id,
+                                    number = theTvDbSeason.number,
+                                    type = theTvDbSeason.type.type
                                 )
                             } else {
                                 null
                             }
                         }.toTypedArray()
                         seasonDao.insertAll(*seasonsArray)
+                        settingsPreferences.writeLongPreference(
+                            settingLastFetchSeasonsFromService, ZonedDateTime.now(
+                                ZoneId.systemDefault()
+                            ).toEpochSecond()
+                        )
                     }
                 } else {
                     GetSeasonsResult.Failure(R.string.error_unknown_issue_fetching_seasons)
@@ -78,14 +90,20 @@ class EpisodesRepo @Inject constructor(
                 seasons = seasonDao.getAll()
             }
             GetSeasonsResult.Seasons(
-                seasons.map { UiSeason(id = it.id, number = it.number) })
+                seasons.mapNotNull {
+                    if (filterSeasons == null || filterSeasons.contains(it.number) || ignoreFilters) {
+                        UiSeason(id = it.id, number = it.number)
+                    } else {
+                        null
+                    }
+                })
         }
     }
 
     suspend fun getEpisodes(seasons: List<UiSeason>): GetEpisodesResult {
         return withContext(Dispatchers.IO) {
             val seasonEpisodeMap = mutableMapOf<UiSeason, List<UiEpisode>>()
-            var hadToFetchSeason = false
+            var hadToFetchFromService = false
             seasons.forEach { season ->
                 val episodes = episodeDao.getAllBySeason(season.number)
                 seasonEpisodeMap[season] = episodes.map {
@@ -102,10 +120,20 @@ class EpisodesRepo @Inject constructor(
                     )
                 }.sortedBy { it.episode }
             }
+            val lastServiceFetch = settingsPreferences.readLongPreference(
+                settingLastFetchEpisodesFromService
+            )
+            val shouldRefresh = lastServiceFetch?.let {
+                val then = ZonedDateTime.ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
+                val now = ZonedDateTime.now(
+                    ZoneId.systemDefault()
+                )
+                Duration.between(then, now).toDays() > 1
+            } ?: true
             seasonEpisodeMap.forEach { (season, episodes) ->
-                if (episodes.isEmpty()) {
-                    if (!hadToFetchSeason) {
-                        hadToFetchSeason = true
+                if (seasonEpisodeMap[season]?.isEmpty() == null || shouldRefresh) {
+                    if (!hadToFetchFromService) {
+                        hadToFetchFromService = true
                     }
                     Log.d(
                         "EpisodesRepo",
@@ -123,18 +151,27 @@ class EpisodesRepo @Inject constructor(
                     if (result.isSuccessful) {
                         val longDogMap = getKnownLongDogsMap()
                         result.body()?.data?.episodes?.let { theTvDbEpisodes ->
-                            val episodesArray = theTvDbEpisodes.map {
-                                RoomEpisode(
-                                    id = it.id,
-                                    season = it.seasonNumber,
-                                    episode = it.number,
-                                    title = it.name,
-                                    description = it.overview,
-                                    imageUrl = it.image,
-                                    knownLongDogCount = if (longDogMap[it.seasonNumber]?.get(it.number) != null) 1 else 0,
-                                    longDogsFound = 0,
-                                    longDogLocation = longDogMap[it.seasonNumber]?.get(it.number)
-                                )
+                            val episodesArray = theTvDbEpisodes.mapNotNull { theTvDbEpisode ->
+                                if (seasonEpisodeMap[season]?.find { it.episode == theTvDbEpisode.number } == null) {
+                                    RoomEpisode(
+                                        id = theTvDbEpisode.id,
+                                        season = theTvDbEpisode.seasonNumber,
+                                        episode = theTvDbEpisode.number,
+                                        title = theTvDbEpisode.name,
+                                        description = theTvDbEpisode.overview,
+                                        imageUrl = theTvDbEpisode.image,
+                                        knownLongDogCount = if (longDogMap[theTvDbEpisode.seasonNumber]?.get(
+                                                theTvDbEpisode.number
+                                            ) != null
+                                        ) 1 else 0,
+                                        longDogsFound = 0,
+                                        longDogLocation = longDogMap[theTvDbEpisode.seasonNumber]?.get(
+                                            theTvDbEpisode.number
+                                        )
+                                    )
+                                } else {
+                                    null
+                                }
                             }.toTypedArray()
                             episodeDao.insertAll(*episodesArray)
                         }
@@ -144,7 +181,12 @@ class EpisodesRepo @Inject constructor(
                 }
             }
             // If we had to fetch from the service query the DB again to get the updates
-            if (hadToFetchSeason) {
+            if (hadToFetchFromService) {
+                settingsPreferences.writeLongPreference(
+                    settingLastFetchEpisodesFromService, ZonedDateTime.now(
+                        ZoneId.systemDefault()
+                    ).toEpochSecond()
+                )
                 seasons.forEach { season ->
                     val episodes = episodeDao.getAllBySeason(season.number)
                     seasonEpisodeMap[season] = episodes.map {
@@ -163,6 +205,28 @@ class EpisodesRepo @Inject constructor(
                 }
             }
             GetEpisodesResult.Episodes(seasonEpisodeMap)
+        }
+    }
+
+    suspend fun getEpisodesByQuery(query: String): GetEpisodesResult {
+        return withContext(Dispatchers.IO) {
+            val filterSeasons = settingsPreferences.readIntListPreference(
+                settingSeasonFilter
+            )
+            val episodes = episodeDao.getAllEpisodeBySearch(query, filterSeasons ?: (0..10).toList())
+            GetEpisodesResult.Episodes(mapOf(Pair(UiSeason(999, 999), episodes.map {
+                UiEpisode(
+                    id = it.id,
+                    title = it.title,
+                    description = it.description,
+                    imageUrl = it.imageUrl,
+                    season = it.season,
+                    knownLongDogCount = it.knownLongDogCount,
+                    longDogsFound = it.longDogsFound,
+                    longDogLocation = it.longDogLocation,
+                    episode = it.episode,
+                )
+            }.sortedBy { it.episode })))
         }
     }
 

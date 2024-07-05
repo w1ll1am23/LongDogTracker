@@ -46,6 +46,22 @@ class SettingsPreferences @Inject constructor(@ApplicationContext context: Conte
         }
     }
 
+    fun writeLongPreference(pref: String, value: Long) {
+        with(preferences.edit()) {
+            putLong(pref, value)
+            apply()
+        }
+    }
+
+    fun readLongPreference(pref: String): Long? {
+        val longPref = preferences.getLong(pref, 0L)
+        return if (longPref == 0L) {
+            null
+        } else {
+            longPref
+        }
+    }
+
     fun deletePreference(pref: String) {
         with(preferences.edit()) {
             remove(pref)

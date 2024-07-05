@@ -1,16 +1,16 @@
-package com.example.longdogtracker.features.episodes.viewmodels
+package com.example.longdogtracker.features.media.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.longdogtracker.features.episodes.EpisodesRepo
-import com.example.longdogtracker.features.episodes.ui.model.UiEpisode
+import com.example.longdogtracker.features.media.EpisodesRepo
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
-class EpisodeSheetViewModel @Inject constructor(private val episodesRepo: EpisodesRepo) : ViewModel() {
+class MediaSheetViewModel @Inject constructor(private val episodesRepo: EpisodesRepo) : ViewModel() {
 
     private lateinit var uiEpisode: UiEpisode
 

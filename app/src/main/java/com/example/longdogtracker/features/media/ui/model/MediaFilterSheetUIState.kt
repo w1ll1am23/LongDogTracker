@@ -1,9 +1,10 @@
-package com.example.longdogtracker.features.episodes.ui.model
+package com.example.longdogtracker.features.media.ui.model
 
 sealed class EpisodeFilterSheetUIState {
     data object Loading : EpisodeFilterSheetUIState()
     data class Filters(
         val seasons: List<Season>,
+        val showMovies: Boolean,
     ) : EpisodeFilterSheetUIState()
 }
 

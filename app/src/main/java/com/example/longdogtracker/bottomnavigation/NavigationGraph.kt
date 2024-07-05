@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.longdogtracker.features.characters.ui.CharactersScreen
-import com.example.longdogtracker.features.episodes.ui.EpisodesScreen
+import com.example.longdogtracker.features.media.ui.MediaScreen
 import com.example.longdogtracker.features.settings.ui.SettingsScreen
 
 @Composable
@@ -26,7 +26,7 @@ fun NavigationGraph(
                 animationSpec = tween(600)
             )
         }) {
-            EpisodesScreen {
+            MediaScreen {
                 navController.navigate(NavItem.Settings.screenRoute) {
                     navController.graph.startDestinationRoute?.let { screenRoute ->
                         popUpTo(screenRoute) {
