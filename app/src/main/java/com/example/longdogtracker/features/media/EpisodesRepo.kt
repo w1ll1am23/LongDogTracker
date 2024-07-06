@@ -4,7 +4,8 @@ import android.util.Log
 import androidx.annotation.StringRes
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.media.network.TheTvDbApi
-import com.example.longdogtracker.features.media.ui.model.UiEpisode
+import com.example.longdogtracker.features.media.ui.model.MediaType
+import com.example.longdogtracker.features.media.ui.model.UiMedia
 import com.example.longdogtracker.features.media.ui.model.UiSeason
 import com.example.longdogtracker.features.settings.SettingsPreferences
 import com.example.longdogtracker.features.settings.model.settingLastFetchEpisodesFromService
@@ -63,8 +64,8 @@ class EpisodesRepo @Inject constructor(
                 if (result.isSuccessful) {
                     // Insert in to DB
                     result.body()?.data?.seasons?.let { theTvDbSeasons ->
-                        val seasonsArray = theTvDbSeasons.mapNotNull { theTvDbSeason ->
-                            if (theTvDbSeason.type.type == "official" && seasons.find { it.number == theTvDbSeason.number } == null) {
+                        val seasonsToInsert = theTvDbSeasons.mapNotNull { theTvDbSeason ->
+                            if (theTvDbSeason.type.type == "official" && seasons.find { it.id == theTvDbSeason.id } == null) {
                                 RoomSeason(
                                     id = theTvDbSeason.id,
                                     number = theTvDbSeason.number,
@@ -73,8 +74,11 @@ class EpisodesRepo @Inject constructor(
                             } else {
                                 null
                             }
-                        }.toTypedArray()
-                        seasonDao.insertAll(*seasonsArray)
+                        }
+                        Log.d("EpisodesRepo", "Inserting Seasons")
+                        if (seasonsToInsert.isNotEmpty()) {
+                            seasonDao.insertAll(*seasonsToInsert.toTypedArray())
+                        }
                         settingsPreferences.writeLongPreference(
                             settingLastFetchSeasonsFromService, ZonedDateTime.now(
                                 ZoneId.systemDefault()
@@ -102,23 +106,23 @@ class EpisodesRepo @Inject constructor(
 
     suspend fun getEpisodes(seasons: List<UiSeason>): GetEpisodesResult {
         return withContext(Dispatchers.IO) {
-            val seasonEpisodeMap = mutableMapOf<UiSeason, List<UiEpisode>>()
+            val seasonEpisodeMap = mutableMapOf<UiSeason, List<UiMedia>>()
             var hadToFetchFromService = false
             seasons.forEach { season ->
                 val episodes = episodeDao.getAllBySeason(season.number)
-                seasonEpisodeMap[season] = episodes.map {
-                    UiEpisode(
+                seasonEpisodeMap[season] = episodes.sortedBy { it.episode }.map {
+                    UiMedia(
                         id = it.id,
+                        apiId = it.apiId,
+                        type = MediaType.Show(episode = it.episode, season = it.season),
                         title = it.title,
                         description = it.description,
                         imageUrl = it.imageUrl,
-                        season = it.season,
                         knownLongDogCount = it.knownLongDogCount,
                         longDogsFound = it.longDogsFound,
                         longDogLocation = it.longDogLocation,
-                        episode = it.episode
                     )
-                }.sortedBy { it.episode }
+                }
             }
             val lastServiceFetch = settingsPreferences.readLongPreference(
                 settingLastFetchEpisodesFromService
@@ -131,7 +135,7 @@ class EpisodesRepo @Inject constructor(
                 Duration.between(then, now).toDays() > 1
             } ?: true
             seasonEpisodeMap.forEach { (season, episodes) ->
-                if (seasonEpisodeMap[season]?.isEmpty() == null || shouldRefresh) {
+                if (episodes.isEmpty() || shouldRefresh) {
                     if (!hadToFetchFromService) {
                         hadToFetchFromService = true
                     }
@@ -148,13 +152,14 @@ class EpisodesRepo @Inject constructor(
                         }
                     }
                     val result = theTvDbApi.getSeason(season.id).execute()
+                    val longDogMap = getKnownLongDogsMap()
                     if (result.isSuccessful) {
-                        val longDogMap = getKnownLongDogsMap()
                         result.body()?.data?.episodes?.let { theTvDbEpisodes ->
                             val episodesArray = theTvDbEpisodes.mapNotNull { theTvDbEpisode ->
-                                if (seasonEpisodeMap[season]?.find { it.episode == theTvDbEpisode.number } == null) {
+                                if (episodes.find { (it.type as MediaType.Show).episode == theTvDbEpisode.number } == null) {
                                     RoomEpisode(
                                         id = theTvDbEpisode.id,
+                                        apiId = theTvDbEpisode.id.toString(),
                                         season = theTvDbEpisode.seasonNumber,
                                         episode = theTvDbEpisode.number,
                                         title = theTvDbEpisode.name,
@@ -189,19 +194,19 @@ class EpisodesRepo @Inject constructor(
                 )
                 seasons.forEach { season ->
                     val episodes = episodeDao.getAllBySeason(season.number)
-                    seasonEpisodeMap[season] = episodes.map {
-                        UiEpisode(
+                    seasonEpisodeMap[season] = episodes.sortedBy { it.episode }.map {
+                        UiMedia(
                             id = it.id,
+                            apiId = it.apiId,
+                            type = MediaType.Show(it.episode, it.season),
                             title = it.title,
                             description = it.description,
                             imageUrl = it.imageUrl,
-                            season = it.season,
                             knownLongDogCount = it.knownLongDogCount,
                             longDogsFound = it.longDogsFound,
                             longDogLocation = it.longDogLocation,
-                            episode = it.episode,
                         )
-                    }.sortedBy { it.episode }
+                    }
                 }
             }
             GetEpisodesResult.Episodes(seasonEpisodeMap)
@@ -213,24 +218,31 @@ class EpisodesRepo @Inject constructor(
             val filterSeasons = settingsPreferences.readIntListPreference(
                 settingSeasonFilter
             )
-            val episodes = episodeDao.getAllEpisodeBySearch(query, filterSeasons ?: (0..10).toList())
-            GetEpisodesResult.Episodes(mapOf(Pair(UiSeason(999, 999), episodes.map {
-                UiEpisode(
-                    id = it.id,
-                    title = it.title,
-                    description = it.description,
-                    imageUrl = it.imageUrl,
-                    season = it.season,
-                    knownLongDogCount = it.knownLongDogCount,
-                    longDogsFound = it.longDogsFound,
-                    longDogLocation = it.longDogLocation,
-                    episode = it.episode,
+            val episodes =
+                episodeDao.getAllEpisodeBySearch(query, filterSeasons ?: (0..10).toList())
+            GetEpisodesResult.Episodes(
+                mapOf(
+                    Pair(
+                        UiSeason(999, 999),
+                        episodes.sortedBy { it.episode }.map {
+                            UiMedia(
+                                id = it.id,
+                                apiId = it.apiId,
+                                type = MediaType.Show(it.episode, it.season),
+                                title = it.title,
+                                description = it.description,
+                                imageUrl = it.imageUrl,
+                                knownLongDogCount = it.knownLongDogCount,
+                                longDogsFound = it.longDogsFound,
+                                longDogLocation = it.longDogLocation,
+                            )
+                        })
                 )
-            }.sortedBy { it.episode })))
+            )
         }
     }
 
-    suspend fun updateEpisode(uiEpisode: UiEpisode) {
+    suspend fun updateEpisode(uiEpisode: UiMedia) {
         withContext(Dispatchers.IO) {
             val episode = episodeDao.getEpisodeById(uiEpisode.id)
             val updatedEpisode = episode.copy(
@@ -256,7 +268,7 @@ class EpisodesRepo @Inject constructor(
     }
 
     sealed class GetEpisodesResult {
-        data class Episodes(val episodes: Map<UiSeason, List<UiEpisode>>) : GetEpisodesResult()
+        data class Episodes(val episodes: Map<UiSeason, List<UiMedia>>) : GetEpisodesResult()
         data class Failure(@StringRes val errorMessage: Int) : GetEpisodesResult()
     }
 }

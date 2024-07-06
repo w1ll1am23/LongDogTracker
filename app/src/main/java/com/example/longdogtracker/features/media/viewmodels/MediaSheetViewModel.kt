@@ -3,7 +3,7 @@ package com.example.longdogtracker.features.media.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.longdogtracker.features.media.EpisodesRepo
-import com.example.longdogtracker.features.media.ui.model.UiEpisode
+import com.example.longdogtracker.features.media.ui.model.UiMedia
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -12,9 +12,9 @@ import javax.inject.Inject
 @HiltViewModel
 class MediaSheetViewModel @Inject constructor(private val episodesRepo: EpisodesRepo) : ViewModel() {
 
-    private lateinit var uiEpisode: UiEpisode
+    private lateinit var uiEpisode: UiMedia
 
-    fun initEpisode(uiEpisode: UiEpisode) {
+    fun initEpisode(uiEpisode: UiMedia) {
         this.uiEpisode = uiEpisode
     }
 
@@ -26,7 +26,7 @@ class MediaSheetViewModel @Inject constructor(private val episodesRepo: Episodes
         updateEpisode(uiEpisode.copy(longDogLocation = location))
     }
 
-    private fun updateEpisode(episode: UiEpisode) {
+    private fun updateEpisode(episode: UiMedia) {
         viewModelScope.launch {
             episodesRepo.updateEpisode(episode)
         }

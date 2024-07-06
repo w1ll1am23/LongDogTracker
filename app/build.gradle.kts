@@ -25,6 +25,11 @@ android {
             "THE_TV_DB_API_KEY",
             "\"${project.findProperty("THE_TV_DB_API_KEY")}\""
         )
+        buildConfigField(
+            "String",
+            "GOOGLE_BOOKS_API_KEY",
+            "\"${project.findProperty("GOOGLE_BOOKS_API_KEY")}\""
+        )
 
         buildFeatures {
             buildConfig = true

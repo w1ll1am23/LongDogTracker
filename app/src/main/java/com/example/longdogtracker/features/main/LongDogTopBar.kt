@@ -35,11 +35,11 @@ import kotlinx.coroutines.delay
 fun LongDogTopBar(navigate: (TopBarNavigation) -> Unit, search: (String) -> Unit) {
     TopAppBar(title = {
         var query by remember {
-            mutableStateOf("")
+            mutableStateOf<String?>(null)
         }
 
         OutlinedTextField(
-            value = query,
+            value = query ?: "",
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -49,7 +49,7 @@ fun LongDogTopBar(navigate: (TopBarNavigation) -> Unit, search: (String) -> Unit
             trailingIcon = {
                 IconButton(onClick = {
                     query = ""
-                    search.invoke(query)
+                    search.invoke(query ?: "")
                 }) {
                     Icon(
                         imageVector = Icons.Default.Clear,
@@ -65,8 +65,10 @@ fun LongDogTopBar(navigate: (TopBarNavigation) -> Unit, search: (String) -> Unit
             singleLine = true
         )
         LaunchedEffect(key1 = query) {
-            delay(500)
-            search.invoke(query)
+            query?.let {
+                delay(500)
+                search.invoke(it)
+            }
         }
     },
         actions = {

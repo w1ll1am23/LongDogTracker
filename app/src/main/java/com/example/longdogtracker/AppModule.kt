@@ -2,8 +2,11 @@ package com.example.longdogtracker
 
 import android.content.Context
 import androidx.room.Room
+import com.example.longdogtracker.features.media.network.GoogleBooksApi
 import com.example.longdogtracker.features.media.network.TheTvDbApi
 import com.example.longdogtracker.network.AddAuthInterceptor
+import com.example.longdogtracker.network.GoogleBooks
+import com.example.longdogtracker.network.TheTvDb
 import com.example.longdogtracker.network.UnauthorizedInterceptor
 import com.example.longdogtracker.room.LongDogDatabase
 import dagger.Module
@@ -45,22 +48,47 @@ object AppModule {
     @Provides
     fun provideMovieDao(db: LongDogDatabase) = db.movieDao()
 
+    @Singleton
     @Provides
-    fun providesOkHttp(
+    fun provideBookDao(db: LongDogDatabase) = db.bookDao()
+
+    @Provides
+    @TheTvDb
+    fun providesTheTvDbOkHttp(
         authInterceptor: AddAuthInterceptor,
         unauthorizedInterceptor: UnauthorizedInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(unauthorizedInterceptor)
-        .build();
+        .build()
 
     @Provides
-    fun provideRetroFit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+    @GoogleBooks
+    fun providesGoogleBooksOkHttp(
+        unauthorizedInterceptor: UnauthorizedInterceptor
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(unauthorizedInterceptor)
+        .build()
+
+    @Provides
+    @TheTvDb
+    fun provideTheTvDbRetroFit(@TheTvDb okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .client(okHttpClient)
         .addConverterFactory(MoshiConverterFactory.create())
         .baseUrl("https://api4.thetvdb.com/v4/")
         .build()
 
     @Provides
-    fun provideTheTvDbApi(retrofit: Retrofit): TheTvDbApi = retrofit.create(TheTvDbApi::class.java)
+    @GoogleBooks
+    fun provideGoogleBooksRetroFit(@GoogleBooks okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .client(okHttpClient)
+        .addConverterFactory(MoshiConverterFactory.create())
+        .baseUrl("https://www.googleapis.com/")
+        .build()
+
+    @Provides
+    fun provideTheTvDbApi(@TheTvDb retrofit: Retrofit): TheTvDbApi = retrofit.create(TheTvDbApi::class.java)
+
+    @Provides
+    fun provideGoogleBooksApi(@GoogleBooks retrofit: Retrofit): GoogleBooksApi = retrofit.create(GoogleBooksApi::class.java)
 }

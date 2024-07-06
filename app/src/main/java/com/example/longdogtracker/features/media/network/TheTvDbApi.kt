@@ -1,10 +1,10 @@
 package com.example.longdogtracker.features.media.network
 
-import com.example.longdogtracker.features.media.network.model.TheTvDbLoginBody
-import com.example.longdogtracker.features.media.network.model.TheTvDbLoginResponse
-import com.example.longdogtracker.features.media.network.model.TheTvDbMovie
-import com.example.longdogtracker.features.media.network.model.TheTvDbSeason
-import com.example.longdogtracker.features.media.network.model.TheTvDbSeries
+import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbLoginBody
+import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbLoginResponse
+import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbMovie
+import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbSeason
+import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbSeries
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET

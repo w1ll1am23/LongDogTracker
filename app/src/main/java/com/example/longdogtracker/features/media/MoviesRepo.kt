@@ -3,8 +3,8 @@ package com.example.longdogtracker.features.media
 import androidx.annotation.StringRes
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.media.network.TheTvDbApi
-import com.example.longdogtracker.features.media.ui.model.UiEpisode
-import com.example.longdogtracker.features.media.ui.model.UiMovie
+import com.example.longdogtracker.features.media.ui.model.MediaType
+import com.example.longdogtracker.features.media.ui.model.UiMedia
 import com.example.longdogtracker.features.settings.SettingsPreferences
 import com.example.longdogtracker.features.settings.model.settingLastFetchMoviesFromService
 import com.example.longdogtracker.features.settings.model.settingMovieFilter
@@ -59,10 +59,11 @@ class MoviesRepo @Inject constructor(
                 if (result.isSuccessful) {
                     // Insert in to DB
                     result.body()?.data?.let { theTvDbMovie ->
-                        if (movies.find { it.id == theTvDbMovie.id } == null) {
+                        if (movies.find { it.apiId == theTvDbMovie.id.toString() } == null) {
                             val moviesToInsert = listOf(
                                 RoomMovie(
-                                    id = theTvDbMovie.id,
+                                    id = 0,
+                                    apiId = theTvDbMovie.id.toString(),
                                     title = theTvDbMovie.name,
                                     description = theTvDbMovie.description ?: "",
                                     imageUrl = theTvDbMovie.image,
@@ -90,8 +91,10 @@ class MoviesRepo @Inject constructor(
             GetMoviesResult.Movies(
                 movies.mapNotNull {
                     if (showMovies || ignoreFilters) {
-                        UiMovie(
+                        UiMedia(
                             id = it.id,
+                            apiId = it.apiId,
+                            type = MediaType.Movie,
                             title = it.title,
                             description = it.description,
                             imageUrl = it.imageUrl,
@@ -106,7 +109,7 @@ class MoviesRepo @Inject constructor(
         }
     }
 
-    suspend fun updateMovie(uiMovie: UiEpisode) {
+    suspend fun updateMovie(uiMovie: UiMedia) {
         withContext(Dispatchers.IO) {
             val movie = movieDao.getMovieById(uiMovie.id)
             val updatedMovie = movie.copy(
@@ -118,7 +121,7 @@ class MoviesRepo @Inject constructor(
     }
 
     sealed class GetMoviesResult {
-        data class Movies(val movies: List<UiMovie>) : GetMoviesResult()
+        data class Movies(val movies: List<UiMedia>) : GetMoviesResult()
         data class Failure(@StringRes val errorMessage: Int) : GetMoviesResult()
     }
 }

@@ -6,6 +6,7 @@ import com.example.longdogtracker.features.media.EpisodesRepo
 import com.example.longdogtracker.features.media.ui.model.EpisodeFilterSheetUIState
 import com.example.longdogtracker.features.media.ui.model.Season
 import com.example.longdogtracker.features.settings.SettingsPreferences
+import com.example.longdogtracker.features.settings.model.settingBooksFilter
 import com.example.longdogtracker.features.settings.model.settingMovieFilter
 import com.example.longdogtracker.features.settings.model.settingSeasonFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ class MediaFilterSheetViewModel @Inject constructor(
 
     private var seasons: List<Season> = emptyList()
     private var showMovies: Boolean = false
+    private var showBooks: Boolean = false
 
     fun filterSeason(seasonNumber: Int, selected: Boolean) {
         val newSeasons: MutableList<Season> = mutableListOf()
@@ -44,19 +46,27 @@ class MediaFilterSheetViewModel @Inject constructor(
             seasons.filter { it.selected }.map { it.number })
 
         episodeFilterMutableStateFlow.value =
-            EpisodeFilterSheetUIState.Filters(seasons, showMovies)
+            EpisodeFilterSheetUIState.Filters(seasons, showMovies, showBooks)
     }
 
     fun showMovies(filter: Boolean) {
         settingsPreferences.writeBooleanPreference(settingMovieFilter, filter)
         showMovies = filter
         episodeFilterMutableStateFlow.value =
-            EpisodeFilterSheetUIState.Filters(seasons, showMovies)
+            EpisodeFilterSheetUIState.Filters(seasons, showMovies, showBooks)
+    }
+
+    fun showBooks(filter: Boolean) {
+        settingsPreferences.writeBooleanPreference(settingBooksFilter, filter)
+        showBooks = filter
+        episodeFilterMutableStateFlow.value =
+            EpisodeFilterSheetUIState.Filters(seasons, showMovies, showBooks)
     }
 
     fun getFilterValues() {
         viewModelScope.launch {
             showMovies = settingsPreferences.readBooleanPreference(settingMovieFilter)
+            showBooks = settingsPreferences.readBooleanPreference(settingBooksFilter)
             val seasonNumbers = when (val result = episodesRepo.getSeasonsForSeries(ignoreFilters = true)) {
                 is EpisodesRepo.GetSeasonsResult.Seasons -> {
                     result.seasons.map { it.number }.toList()
@@ -71,7 +81,7 @@ class MediaFilterSheetViewModel @Inject constructor(
                 settingsPreferences.readIntListPreference(settingSeasonFilter) ?: seasonNumbers
             seasons = seasonNumbers.map { Season(it, seasonFilter.contains(it)) }
             episodeFilterMutableStateFlow.value =
-                EpisodeFilterSheetUIState.Filters(seasons, showMovies)
+                EpisodeFilterSheetUIState.Filters(seasons, showMovies, showBooks)
         }
 
     }

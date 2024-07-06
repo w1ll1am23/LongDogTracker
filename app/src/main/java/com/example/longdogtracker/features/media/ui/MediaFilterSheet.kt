@@ -28,7 +28,7 @@ fun EpisodeFilterSheet() {
 
     val uiState by viewModel.episodeFilterStateFlow.collectAsState()
 
-    HandleUiState(uiState, viewModel::filterSeason, viewModel::showMovies)
+    HandleUiState(uiState, viewModel::filterSeason, viewModel::showMovies, viewModel::showBooks)
 
     LaunchedEffect(key1 = null) {
         viewModel.getFilterValues()
@@ -39,7 +39,9 @@ fun EpisodeFilterSheet() {
 private fun HandleUiState(
     uiState: EpisodeFilterSheetUIState,
     filterSeason: (Int, Boolean) -> Unit,
-    filterMovies: (Boolean) -> Unit
+    filterMovies: (Boolean) -> Unit,
+    filterBooks: (Boolean) -> Unit
+
 ) {
     Box(modifier = Modifier.padding(16.dp)) {
         when (uiState) {
@@ -62,6 +64,13 @@ private fun HandleUiState(
                             selected = uiState.showMovies,
                             onClick = { filterMovies.invoke(!uiState.showMovies) },
                             label = { Text(text = "Movies") })
+                    }
+                    item { Text("Books:", Modifier.semantics { heading() }) }
+                    item {
+                        FilterChip(
+                            selected = uiState.showBooks,
+                            onClick = { filterBooks.invoke(!uiState.showBooks) },
+                            label = { Text(text = "Books") })
                     }
                 }
             }

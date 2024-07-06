@@ -5,8 +5,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "episodes")
 data class RoomEpisode(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     val id: Int,
+    val apiId: String,
     val season: Int,
     val episode: Int,
     val title: String,

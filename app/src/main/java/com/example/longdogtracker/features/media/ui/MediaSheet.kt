@@ -33,7 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.longdogtracker.R
-import com.example.longdogtracker.features.media.ui.model.UiEpisode
+import com.example.longdogtracker.features.media.ui.model.MediaType
+import com.example.longdogtracker.features.media.ui.model.UiMedia
 import com.example.longdogtracker.features.media.viewmodels.MediaSheetViewModel
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentDark
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
@@ -41,7 +42,7 @@ import com.example.longdogtracker.ui.theme.BlueyBodySnout
 import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 
 @Composable
-fun EpisodeSheet(episode: UiEpisode) {
+fun EpisodeSheet(episode: UiMedia) {
     val viewModel = hiltViewModel<MediaSheetViewModel>()
 
     HandleUiState(
@@ -59,7 +60,7 @@ fun EpisodeSheet(episode: UiEpisode) {
 
 @Composable
 private fun HandleUiState(
-    episode: UiEpisode,
+    episode: UiMedia,
     updateLongDogStatus: (Int) -> Unit,
     updateLongDogLocation: (String) -> Unit
 ) {
@@ -166,6 +167,7 @@ fun LongDogStepper(count: Int, updateQuantity: (Int) -> Unit) {
                 currentCount.intValue == 0 -> {
                     Color.LightGray
                 }
+
                 else -> {
                     BlueyBodySnout
                 }
@@ -217,6 +219,17 @@ fun LongDogStepperPreview() {
 @Composable
 fun LongDogSheetPreview() {
     LongDogTrackerPrimaryTheme {
-        HandleUiState(UiEpisode(1, "title", "description", null, 1, 1, 1, 0, null), {}, {})
+        HandleUiState(
+            UiMedia(
+                id  = 1,
+                apiId = "",
+                title = "title",
+                type = MediaType.Movie,
+                description = "description",
+                longDogLocation = null,
+                longDogsFound = 1,
+                knownLongDogCount = 1,
+                imageUrl = null
+            ), {}, {})
     }
 }

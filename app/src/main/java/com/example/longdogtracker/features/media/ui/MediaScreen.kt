@@ -52,8 +52,9 @@ import coil.request.ImageRequest
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.main.LongDogTopBar
 import com.example.longdogtracker.features.main.TopBarNavigation
+import com.example.longdogtracker.features.media.ui.model.MediaType
 import com.example.longdogtracker.features.media.ui.model.MediaUIState
-import com.example.longdogtracker.features.media.ui.model.UiEpisode
+import com.example.longdogtracker.features.media.ui.model.UiMedia
 import com.example.longdogtracker.features.media.viewmodels.MediaViewModel
 import com.example.longdogtracker.ui.theme.BingoBodyPrimary
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
@@ -131,9 +132,76 @@ private fun HandleUiState(
                         mutableStateOf(false)
                     }
                     val selectedEpisode = remember {
-                        mutableStateOf<UiEpisode?>(null)
+                        mutableStateOf<UiMedia?>(null)
                     }
                     LazyColumn {
+                        if (uiState.books.isNotEmpty()) {
+                            stickyHeader {
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(BlueyBodyAccentLight)
+                                ) {
+                                    Text(
+                                        "Books",
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+                            }
+                            items(uiState.books) { book ->
+                                Card(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .clickable {
+                                        },
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                                    shape = RoundedCornerShape(size = 16.dp)
+                                ) {
+                                    Column(Modifier.padding(16.dp)) {
+                                        val color = when {
+                                            book.longDogsFound > 0 -> BlueyBodySnout
+                                            book.knownLongDogCount > 0 && book.longDogsFound == 0 -> Color.LightGray
+                                            else -> Color.Black
+                                        }
+                                        Row(
+                                            Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                book.title,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = TextUnit(16F, TextUnitType.Sp)
+                                            )
+                                            Image(
+                                                painter = painterResource(id = R.drawable.long_dog_black),
+                                                colorFilter = ColorFilter.tint(color),
+                                                modifier = Modifier.size(32.dp),
+                                                contentDescription = null,
+                                            )
+                                        }
+                                        AsyncImage(
+                                            modifier = Modifier
+                                                .padding(vertical = 8.dp)
+                                                .fillMaxWidth(),
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(book.imageUrl)
+                                                .memoryCachePolicy(CachePolicy.ENABLED)
+                                                .diskCachePolicy(CachePolicy.ENABLED)
+                                                .crossfade(true)
+                                                .build(),
+                                            contentScale = ContentScale.FillWidth,
+                                            contentDescription = null,
+                                        )
+                                        Text(
+                                            book.description,
+                                            fontSize = TextUnit(13F, TextUnitType.Sp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         if (uiState.movies.isNotEmpty()) {
                             stickyHeader {
                                 Row(
@@ -215,9 +283,11 @@ private fun HandleUiState(
                                         0 -> {
                                             Text("Specials", modifier = Modifier.padding(16.dp))
                                         }
+
                                         999 -> {
                                             Text("Results", modifier = Modifier.padding(16.dp))
                                         }
+
                                         else -> {
                                             Text(
                                                 "Season: ${season.number}",
@@ -233,6 +303,7 @@ private fun HandleUiState(
                             }
 
                             items(episodes) { episode ->
+                                val type = episode.type as MediaType.Show
                                 Card(
                                     modifier = Modifier
                                         .padding(8.dp)
@@ -266,7 +337,7 @@ private fun HandleUiState(
                                             )
                                         }
                                         Text(
-                                            "Season: ${episode.season} Episode: ${episode.episode}",
+                                            "Season: ${type.season} Episode: ${type.episode}",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = TextUnit(16F, TextUnitType.Sp)
                                         )

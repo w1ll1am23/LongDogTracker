@@ -1,4 +1,4 @@
-package com.example.longdogtracker.features.media.network.model
+package com.example.longdogtracker.features.media.network.model.thetvdb
 
 import com.squareup.moshi.JsonClass
 
