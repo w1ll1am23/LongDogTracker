@@ -7,6 +7,6 @@ import retrofit2.http.Query
 
 interface GoogleBooksApi {
 
-    @GET("books/v1/volumes?q=inauthor:\"Bluey\"&printType=books")
+    @GET("books/v1/volumes?q=inauthor:\"Bluey\"&printType=books&maxResults=40")
     fun getBooks(@Query("key") key: String): Call<BooksResponse>
 }

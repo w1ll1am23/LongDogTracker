@@ -51,12 +51,12 @@ class BooksRepo @Inject constructor(
                     // Insert in to DB
                     result.body()?.items?.let { apiBooks ->
                         val booksToInsert = apiBooks.mapNotNull { book ->
-                            if (books.find { it.apiId == book.id } == null) {
+                            if (books.find { it.apiId == book.id } == null && book.volumeInfo.readingModes.text) {
                                 RoomBook(
                                     id = 0,
                                     apiId = book.id,
                                     title = book.volumeInfo.title,
-                                    description = book.volumeInfo.description,
+                                    description = book.volumeInfo.description ?: "",
                                     imageUrl = book.volumeInfo.imageLinks.thumbnail.replace("http://", "https://"),
                                     knownLongDogCount = 0,
                                     longDogsFound = 0,

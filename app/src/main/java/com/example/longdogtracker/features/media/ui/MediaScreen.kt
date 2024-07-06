@@ -1,5 +1,6 @@
 package com.example.longdogtracker.features.media.ui
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -100,6 +101,7 @@ fun MediaScreen(navigate: () -> Unit) {
     }
 
     LaunchedEffect(key1 = null) {
+        Log.d("MediaScreen", "Loading initial state from composable")
         viewModel.loadInitialData()
     }
 }
@@ -144,10 +146,22 @@ private fun HandleUiState(
                                         .fillMaxWidth()
                                         .background(BlueyBodyAccentLight)
                                 ) {
-                                    Text(
-                                        "Books",
-                                        modifier = Modifier.padding(16.dp)
-                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(BlueyBodyAccentLight)
+                                    ) {
+                                        Text(
+                                            "Books",
+                                            modifier = Modifier.padding(16.dp)
+                                        )
+                                        Text(
+                                            "${uiState.books.size}",
+                                            modifier = Modifier.padding(16.dp)
+                                        )
+                                    }
                                 }
                             }
                             items(uiState.books) { book ->
@@ -191,7 +205,7 @@ private fun HandleUiState(
                                                 .diskCachePolicy(CachePolicy.ENABLED)
                                                 .crossfade(true)
                                                 .build(),
-                                            contentScale = ContentScale.FillWidth,
+                                            contentScale = ContentScale.Fit,
                                             contentDescription = null,
                                         )
                                         Text(
@@ -258,7 +272,7 @@ private fun HandleUiState(
                                                 .diskCachePolicy(CachePolicy.ENABLED)
                                                 .crossfade(true)
                                                 .build(),
-                                            contentScale = ContentScale.FillWidth,
+                                            contentScale = ContentScale.Fit,
                                             contentDescription = null,
                                         )
                                         Text(

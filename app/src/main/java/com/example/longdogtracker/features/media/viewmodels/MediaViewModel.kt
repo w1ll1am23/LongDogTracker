@@ -26,6 +26,7 @@ class MediaViewModel @Inject constructor(
     val episodesStateFlow: StateFlow<MediaUIState> = episodesMutableStateFlow
 
     fun loadInitialData() {
+        Log.d("MediaViewModel", "Loading initial state VM")
         viewModelScope.launch {
             var movies: List<UiMedia> = listOf()
             when (val moviesResult = moviesRepo.getAllMovies()) {
