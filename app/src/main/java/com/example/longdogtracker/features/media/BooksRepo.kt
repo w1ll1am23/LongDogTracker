@@ -57,7 +57,7 @@ class BooksRepo @Inject constructor(
                                     apiId = book.id,
                                     title = book.volumeInfo.title,
                                     description = book.volumeInfo.description ?: "",
-                                    imageUrl = book.volumeInfo.imageLinks.thumbnail.replace("http://", "https://"),
+                                    imageUrl = book.volumeInfo.imageLinks?.thumbnail?.replace("http://", "https://"),
                                     knownLongDogCount = 0,
                                     longDogsFound = 0,
                                     longDogLocation = null,
