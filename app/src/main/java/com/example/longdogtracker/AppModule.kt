@@ -30,7 +30,7 @@ object AppModule {
         app,
         LongDogDatabase::class.java,
         "long_dogs"
-    ).build()
+    ).createFromAsset("known_longdogs.db").build()
 
     @Singleton
     @Provides
@@ -51,6 +51,10 @@ object AppModule {
     @Singleton
     @Provides
     fun provideBookDao(db: LongDogDatabase) = db.bookDao()
+
+    @Singleton
+    @Provides
+    fun provideLongDogLocationDao(db: LongDogDatabase) = db.longDogLocationDao()
 
     @Provides
     @TheTvDb

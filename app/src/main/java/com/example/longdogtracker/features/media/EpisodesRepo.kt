@@ -13,6 +13,7 @@ import com.example.longdogtracker.features.settings.model.settingLastFetchSeason
 import com.example.longdogtracker.features.settings.model.settingSeasonFilter
 import com.example.longdogtracker.network.LoginServiceInteractor
 import com.example.longdogtracker.room.EpisodeDao
+import com.example.longdogtracker.room.LongDogLocationDao
 import com.example.longdogtracker.room.RoomEpisode
 import com.example.longdogtracker.room.RoomSeason
 import com.example.longdogtracker.room.SeasonDao
@@ -28,6 +29,7 @@ class EpisodesRepo @Inject constructor(
     private val theTvDbApi: TheTvDbApi,
     private val episodeDao: EpisodeDao,
     private val seasonDao: SeasonDao,
+    private val longDogLocationDao: LongDogLocationDao,
     private val settingsPreferences: SettingsPreferences,
     private val loginServiceInteractor: LoginServiceInteractor,
 ) {
@@ -120,7 +122,7 @@ class EpisodesRepo @Inject constructor(
                         imageUrl = it.imageUrl,
                         knownLongDogCount = it.knownLongDogCount,
                         longDogsFound = it.longDogsFound,
-                        longDogLocation = it.longDogLocation,
+                        longDogLocations = it.longDogLocations?.split(";"),
                     )
                 }
             }
@@ -152,11 +154,12 @@ class EpisodesRepo @Inject constructor(
                         }
                     }
                     val result = theTvDbApi.getSeason(season.id).execute()
-                    val longDogMap = getKnownLongDogsMap()
                     if (result.isSuccessful) {
                         result.body()?.data?.episodes?.let { theTvDbEpisodes ->
                             val episodesArray = theTvDbEpisodes.mapNotNull { theTvDbEpisode ->
                                 if (episodes.find { (it.type as MediaType.Show).episode == theTvDbEpisode.number } == null) {
+                                    val knownLongDog = longDogLocationDao.getLocationByEpisode(theTvDbEpisode.seasonNumber, theTvDbEpisode.number)
+                                    val locations = knownLongDog?.locations?.split(";")
                                     RoomEpisode(
                                         id = theTvDbEpisode.id,
                                         apiId = theTvDbEpisode.id.toString(),
@@ -165,14 +168,9 @@ class EpisodesRepo @Inject constructor(
                                         title = theTvDbEpisode.name,
                                         description = theTvDbEpisode.overview,
                                         imageUrl = theTvDbEpisode.image,
-                                        knownLongDogCount = if (longDogMap[theTvDbEpisode.seasonNumber]?.get(
-                                                theTvDbEpisode.number
-                                            ) != null
-                                        ) 1 else 0,
+                                        knownLongDogCount = locations?.size ?: 0,
                                         longDogsFound = 0,
-                                        longDogLocation = longDogMap[theTvDbEpisode.seasonNumber]?.get(
-                                            theTvDbEpisode.number
-                                        )
+                                        longDogLocations = knownLongDog?.locations
                                     )
                                 } else {
                                     null
@@ -204,7 +202,7 @@ class EpisodesRepo @Inject constructor(
                             imageUrl = it.imageUrl,
                             knownLongDogCount = it.knownLongDogCount,
                             longDogsFound = it.longDogsFound,
-                            longDogLocation = it.longDogLocation,
+                            longDogLocations = it.longDogLocations?.split(";"),
                         )
                     }
                 }
@@ -234,7 +232,7 @@ class EpisodesRepo @Inject constructor(
                                 imageUrl = it.imageUrl,
                                 knownLongDogCount = it.knownLongDogCount,
                                 longDogsFound = it.longDogsFound,
-                                longDogLocation = it.longDogLocation,
+                                longDogLocations = it.longDogLocations?.split(";"),
                             )
                         })
                 )
@@ -247,19 +245,10 @@ class EpisodesRepo @Inject constructor(
             val episode = episodeDao.getEpisodeById(uiEpisode.id)
             val updatedEpisode = episode.copy(
                 longDogsFound = uiEpisode.longDogsFound,
-                longDogLocation = uiEpisode.longDogLocation
+                longDogLocations = uiEpisode.longDogLocations?.joinToString(";")
             )
             episodeDao.updateEpisode(updatedEpisode)
         }
-    }
-
-    private fun getKnownLongDogsMap(): Map<Int, Map<Int, String>> {
-        val knownLongDogs = KnownLongDogs()
-        return mapOf(
-            Pair(1, knownLongDogs.seasonOne),
-            Pair(2, knownLongDogs.seasonTwo),
-            Pair(3, knownLongDogs.seasonThree)
-        )
     }
 
     sealed class GetSeasonsResult {

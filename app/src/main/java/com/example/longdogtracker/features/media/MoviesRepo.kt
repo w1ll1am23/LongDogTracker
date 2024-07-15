@@ -69,7 +69,7 @@ class MoviesRepo @Inject constructor(
                                     imageUrl = theTvDbMovie.image,
                                     knownLongDogCount = 0,
                                     longDogsFound = 0,
-                                    longDogLocation = null
+                                    longDogLocations = null
                                 )
                             ).toTypedArray()
                             movieDao.insertAll(*moviesToInsert)
@@ -100,7 +100,7 @@ class MoviesRepo @Inject constructor(
                             imageUrl = it.imageUrl,
                             knownLongDogCount = it.knownLongDogCount,
                             longDogsFound = it.longDogsFound,
-                            longDogLocation = it.longDogLocation
+                            longDogLocations = it.longDogLocations?.split(";")
                         )
                     } else {
                         null
@@ -114,7 +114,7 @@ class MoviesRepo @Inject constructor(
             val movie = movieDao.getMovieById(uiMovie.id)
             val updatedMovie = movie.copy(
                 longDogsFound = uiMovie.longDogsFound,
-                longDogLocation = uiMovie.longDogLocation
+                longDogLocations = uiMovie.longDogLocations?.joinToString(";")
             )
             movieDao.updateMovie(updatedMovie)
         }

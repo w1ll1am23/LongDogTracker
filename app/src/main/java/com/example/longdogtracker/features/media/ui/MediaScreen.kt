@@ -111,10 +111,10 @@ private fun HandleUiState(
                 }
 
                 is MediaUIState.Media -> {
-                    val showEpisodeSheet = remember {
+                    val showMediaSheet = remember {
                         mutableStateOf(false)
                     }
-                    val selectedEpisode = remember {
+                    val selectedMedia = remember {
                         mutableStateOf<UiMedia?>(null)
                     }
                     LazyColumn {
@@ -148,7 +148,10 @@ private fun HandleUiState(
                             items(uiState.books) { book ->
                                 MediaCard(
                                     book
-                                )
+                                ) {
+                                    selectedMedia.value = book
+                                    showMediaSheet.value = true
+                                }
                             }
                         }
                         if (uiState.movies.isNotEmpty()) {
@@ -169,7 +172,10 @@ private fun HandleUiState(
                             items(uiState.movies) { movie ->
                                 MediaCard(
                                     movie
-                                )
+                                ) {
+                                    selectedMedia.value = movie
+                                    showMediaSheet.value = true
+                                }
                             }
 
                         }
@@ -208,23 +214,29 @@ private fun HandleUiState(
                             items(episodes) { episode ->
                                 MediaCard(
                                     episode
-                                )
+                                ) {
+                                    selectedMedia.value = episode
+                                    showMediaSheet.value = true
+                                }
                             }
                         }
                     }
-                    if (showEpisodeSheet.value) {
-                        selectedEpisode.value?.let {
+                    if (showMediaSheet.value) {
+                        selectedMedia.value?.let {
                             ModalBottomSheet(
                                 containerColor = if (it.title.lowercase() == "bingo") BingoBodyPrimary else BlueyBodyAccentLight,
                                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                                sheetState = rememberModalBottomSheetState(),
+                                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                                 windowInsets = WindowInsets.safeDrawing,
                                 dragHandle = { BottomSheetDefaults.HiddenShape },
                                 onDismissRequest = {
-                                    showEpisodeSheet.value = false
+                                    showMediaSheet.value = false
                                     sheetDismissed.invoke()
                                 }) {
-                                EpisodeSheet(episode = it)
+                                MediaSheet(uiMedia = it) {
+                                    showMediaSheet.value = false
+                                    sheetDismissed.invoke()
+                                }
                             }
                         }
                     }

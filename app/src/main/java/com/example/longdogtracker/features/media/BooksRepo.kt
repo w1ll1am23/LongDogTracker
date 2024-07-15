@@ -60,7 +60,7 @@ class BooksRepo @Inject constructor(
                                     imageUrl = book.volumeInfo.imageLinks?.thumbnail?.replace("http://", "https://"),
                                     knownLongDogCount = 0,
                                     longDogsFound = 0,
-                                    longDogLocation = null,
+                                    longDogLocations = null,
                                 )
                             } else {
                                 null
@@ -95,7 +95,7 @@ class BooksRepo @Inject constructor(
                             imageUrl = it.imageUrl,
                             knownLongDogCount = it.knownLongDogCount,
                             longDogsFound = it.longDogsFound,
-                            longDogLocation = it.longDogLocation
+                            longDogLocations = it.longDogLocations?.split(";")
                         )
                     } else {
                         null
@@ -109,7 +109,7 @@ class BooksRepo @Inject constructor(
             val movie = bookDao.getBookById(uiBook.id)
             val updatedMovie = movie.copy(
                 longDogsFound = uiBook.longDogsFound,
-                longDogLocation = uiBook.longDogLocation
+                longDogLocations = uiBook.longDogLocations?.joinToString(";")
             )
             bookDao.updateBook(updatedMovie)
         }

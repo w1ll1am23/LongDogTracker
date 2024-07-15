@@ -13,5 +13,5 @@ data class RoomBook(
     val imageUrl: String?,
     val knownLongDogCount: Int,
     val longDogsFound: Int,
-    val longDogLocation: String?
+    val longDogLocations: String?
 )

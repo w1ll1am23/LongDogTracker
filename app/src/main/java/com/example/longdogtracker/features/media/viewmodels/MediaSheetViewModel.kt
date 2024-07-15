@@ -10,7 +10,8 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class MediaSheetViewModel @Inject constructor(private val episodesRepo: EpisodesRepo) : ViewModel() {
+class MediaSheetViewModel @Inject constructor(private val episodesRepo: EpisodesRepo) :
+    ViewModel() {
 
     private lateinit var uiEpisode: UiMedia
 
@@ -23,7 +24,13 @@ class MediaSheetViewModel @Inject constructor(private val episodesRepo: Episodes
     }
 
     fun updateLongDogLocation(location: String) {
-        updateEpisode(uiEpisode.copy(longDogLocation = location))
+        val newLocations = uiEpisode.longDogLocations?.toMutableList() ?: mutableListOf()
+        newLocations.add(location)
+        updateEpisode(
+            uiEpisode.copy(
+                longDogLocations = newLocations
+            )
+        )
     }
 
     private fun updateEpisode(episode: UiMedia) {
