@@ -19,23 +19,9 @@ class MediaSheetViewModel @Inject constructor(private val episodesRepo: Episodes
         this.uiEpisode = uiEpisode
     }
 
-    fun updateLongDogStatus(found: Int) {
-        updateEpisode(uiEpisode.copy(longDogsFound = found))
-    }
-
-    fun updateLongDogLocation(location: String) {
-        val newLocations = uiEpisode.longDogLocations?.toMutableList() ?: mutableListOf()
-        newLocations.add(location)
-        updateEpisode(
-            uiEpisode.copy(
-                longDogLocations = newLocations
-            )
-        )
-    }
-
-    private fun updateEpisode(episode: UiMedia) {
+    fun updateLongDogLocationFoundStatus(locationId: Int, found: Boolean) {
         viewModelScope.launch {
-            episodesRepo.updateEpisode(episode)
+            episodesRepo.updateLocationFoundStat(locationId, found)
         }
     }
 }

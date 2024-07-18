@@ -1,11 +1,8 @@
 package com.example.longdogtracker.room
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.Relation
 
-@Entity(tableName = "episodes")
-data class RoomEpisode(
-    @PrimaryKey
+data class RoomEpisodeWithLocations(
     val id: Int,
     val apiId: String,
     val season: Int,
@@ -14,4 +11,6 @@ data class RoomEpisode(
     val title: String,
     val description: String,
     val imageUrl: String?,
+    @Relation(parentColumn = "seasonEpisode", entityColumn = "seasonEpisode")
+    val longDogLocations: List<RoomEpisodeLongDogLocation>?
 )

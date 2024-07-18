@@ -11,7 +11,7 @@ def main():
     cur = con.cursor()
     cur.execute('''
           CREATE TABLE IF NOT EXISTS longdogs
-          ([id] INTEGER PRIMARY KEY NOT NULL, [season] INTEGER NOT NULL, [episode] INTEGER NOT NULL, [locations] TEXT NOT NULL)
+          ([longDogLocationId] INTEGER PRIMARY KEY NOT NULL, [seasonEpisode] TEXT NOT NULL, [location] TEXT NOT NULL, [found] INTEGER NOT NULL, [userAdded] INTEGER NOT NULL)
           ''')
     con.commit()
 
@@ -21,13 +21,15 @@ def main():
     id = 0
     for season, episodes in locations_json["seasons"].items():
         for episode, locations in episodes.items():
-            id += 1
-            add_row(cur, id, int(season), int(episode), ";".join(locations))
+            for location in locations:
+                id += 1
+                add_row(cur, id, str(int(season)) + str(int(episode)), location, False, False)
     con.commit()
 
-def add_row(cursor, id, season, episode, locations):
-    cursor.execute("INSERT INTO longdogs VALUES(?, ?, ?, ?)",
-                   (id, season, episode, locations))
+
+def add_row(cursor, id, season_episode, location, found, user_added):
+    cursor.execute("INSERT INTO longdogs VALUES(?, ?, ?, ?, ?)",
+                   (id, season_episode, location, found, user_added))
 
 
 main()

@@ -95,7 +95,7 @@ class BooksRepo @Inject constructor(
                             imageUrl = it.imageUrl,
                             knownLongDogCount = it.knownLongDogCount,
                             longDogsFound = it.longDogsFound,
-                            longDogLocations = it.longDogLocations?.split(";")
+                            longDogLocations = null // TODO: Fix this
                         )
                     } else {
                         null

@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [RoomEpisode::class, RoomSeason::class,
         RoomCharacter::class, RoomMovie::class,
-        RoomBook::class, RoomLongDogLocation::class],
+        RoomBook::class, RoomEpisodeLongDogLocation::class],
     version = 1
 )
 abstract class LongDogDatabase : RoomDatabase() {

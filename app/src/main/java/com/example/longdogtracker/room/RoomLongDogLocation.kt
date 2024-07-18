@@ -4,10 +4,11 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "longdogs")
-data class RoomLongDogLocation(
+data class RoomEpisodeLongDogLocation(
     @PrimaryKey
-    val id: Int,
-    val season: Int,
-    val episode: Int,
-    val locations: String,
+    val longDogLocationId: Int,
+    val seasonEpisode: String,
+    val location: String,
+    val found: Boolean,
+    val userAdded: Boolean,
 )

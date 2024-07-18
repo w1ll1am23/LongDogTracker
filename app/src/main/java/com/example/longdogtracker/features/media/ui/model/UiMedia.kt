@@ -9,5 +9,5 @@ data class UiMedia(
     val imageUrl: String?,
     val knownLongDogCount: Int,
     val longDogsFound: Int,
-    val longDogLocations: List<String>?
+    val longDogLocations: List<UiLongDogLocation>?
 )

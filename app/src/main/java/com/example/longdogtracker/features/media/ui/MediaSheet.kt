@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -50,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.longdogtracker.R
+import com.example.longdogtracker.features.media.ui.model.UiLongDogLocation
 import com.example.longdogtracker.features.media.ui.model.UiMedia
 import com.example.longdogtracker.features.media.viewmodels.MediaSheetViewModel
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentDark
@@ -65,8 +66,7 @@ fun MediaSheet(uiMedia: UiMedia, dismissSheet: () -> Unit) {
     HandleUiState(
         uiMedia = uiMedia,
         dismissSheet = dismissSheet,
-        updateLongDogStatus = viewModel::updateLongDogStatus,
-        updateLongDogLocation = viewModel::updateLongDogLocation
+        updateLongDogLocationFoundStatus = viewModel::updateLongDogLocationFoundStatus
     )
 
     LaunchedEffect(key1 = uiMedia) {
@@ -80,18 +80,11 @@ fun MediaSheet(uiMedia: UiMedia, dismissSheet: () -> Unit) {
 private fun HandleUiState(
     uiMedia: UiMedia,
     dismissSheet: () -> Unit,
-    updateLongDogStatus: (Int) -> Unit,
-    updateLongDogLocation: (String) -> Unit
+    updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
 ) {
-    var locations by remember {
-        mutableStateOf(uiMedia.longDogLocations)
-    }
     Scaffold(
         floatingActionButton = {
             Button(onClick = {
-                val newLocations = locations?.toMutableList() ?: mutableListOf()
-                newLocations.add("")
-                locations = newLocations
             }) {
                 Text(text = "Add Long Dog")
             }
@@ -120,17 +113,12 @@ private fun HandleUiState(
                 }
             }
             LazyColumn {
-                locations?.let { locations ->
-                    itemsIndexed(locations) { index, location ->
-                        if (location.isNotEmpty()) {
-                            LongDogLocationCard(
-                                number = index + 1,
-                                location = location,
-                                found = false
-                            )
-                        } else {
-                            NewLongDogLocationCard(updateLongDogLocation)
-                        }
+                uiMedia.longDogLocations?.let { locations ->
+                    items(locations) { location ->
+                        LongDogLocationCard(
+                            uiLongDogLocation = location,
+                            updateLongDogLocationFoundStatus = updateLongDogLocationFoundStatus
+                        )
                     }
                 }
             }
@@ -230,7 +218,10 @@ fun NewLongDogLocationCard(updateLocation: (String) -> Unit) {
 }
 
 @Composable
-fun LongDogLocationCard(number: Int, location: String, found: Boolean) {
+fun LongDogLocationCard(
+    uiLongDogLocation: UiLongDogLocation,
+    updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
+) {
     var flip by remember { mutableStateOf(false) }
     var flipRotation by remember { mutableFloatStateOf(0f) }
     val animationSpec = tween<Float>(1000, easing = CubicBezierEasing(0.4f, 0.0f, 0.8f, 0.8f))
@@ -251,10 +242,10 @@ fun LongDogLocationCard(number: Int, location: String, found: Boolean) {
     ) {
         if (flipRotation < 90f) {
             LongDogLocationCardFront(
-                number, found
+                uiLongDogLocation
             )
         } else {
-            LongDogLocationCardBack(location = location, found = found)
+            LongDogLocationCardBack(uiLongDogLocation, updateLongDogLocationFoundStatus)
         }
     }
 
@@ -280,22 +271,27 @@ fun LongDogLocationCard(number: Int, location: String, found: Boolean) {
 }
 
 @Composable
-fun LongDogLocationCardFront(number: Int, found: Boolean) {
+fun LongDogLocationCardFront(uiLongDogLocation: UiLongDogLocation) {
     Box(
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth()
             .padding(16.dp),
     ) {
-        Text(text = "Long dog #$number", modifier = Modifier.align(Alignment.TopStart))
+        Text(
+            text = "Long dog #${uiLongDogLocation.number}",
+            modifier = Modifier.align(Alignment.TopStart)
+        )
         Text(text = "Tap to view location", modifier = Modifier.align(Alignment.Center))
     }
 }
 
 @Composable
-fun LongDogLocationCardBack(location: String, found: Boolean) {
+fun LongDogLocationCardBack(
+    uiLongDogLocation: UiLongDogLocation, updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
+) {
     var checked by remember {
-        mutableStateOf(found)
+        mutableStateOf(uiLongDogLocation.found)
     }
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -305,8 +301,11 @@ fun LongDogLocationCardBack(location: String, found: Boolean) {
             }
             .padding(16.dp),
     ) {
-        Text(text = location, modifier = Modifier.weight(0.8f))
-        Checkbox(checked = checked, onCheckedChange = { checked = !checked })
+        Text(text = uiLongDogLocation.location, modifier = Modifier.weight(0.8f))
+        Checkbox(checked = checked, onCheckedChange = {
+            checked = !checked
+            updateLongDogLocationFoundStatus.invoke(uiLongDogLocation.id, checked)
+        })
     }
 
 }
