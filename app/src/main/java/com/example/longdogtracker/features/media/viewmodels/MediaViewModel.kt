@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.longdogtracker.features.media.BooksRepo
 import com.example.longdogtracker.features.media.EpisodesRepo
 import com.example.longdogtracker.features.media.MoviesRepo
+import com.example.longdogtracker.features.media.ui.model.MediaListItem
 import com.example.longdogtracker.features.media.ui.model.MediaUIState
 import com.example.longdogtracker.features.media.ui.model.UiMedia
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -56,7 +57,33 @@ class MediaViewModel @Inject constructor(
                         when (val episodesResult =
                             episodesRepo.getEpisodes(seasonsResult.seasons)) {
                             is EpisodesRepo.GetEpisodesResult.Episodes -> {
-                                MediaUIState.Media(episodesResult.episodes, movies, books)
+                                val mediaList = mutableListOf<MediaListItem>()
+                                val seasons = mutableListOf<Int>()
+                                val headerLocations = mutableListOf<Int>()
+                                var count = 0
+                                episodesResult.episodes.forEach { (season, episodes) ->
+                                    headerLocations.add(count)
+                                    count += 1
+                                    seasons.add(season.number)
+                                        mediaList.add(
+                                            MediaListItem.Header(
+                                                key = season.id,
+                                                season = "Season: ${season.number}",
+                                                longDogs = "${episodes.sumOf { it.longDogsFound }} of ${episodes.sumOf { it.knownLongDogCount }}",
+                                                totalCount = "${episodes.size} episodes"
+                                            )
+                                        )
+                                        episodes.forEach { episode ->
+                                            count += 1
+                                            mediaList.add(
+                                                MediaListItem.Media(
+                                                    key = episode.id,
+                                                    media = episode
+                                                )
+                                            )
+                                        }
+                                }
+                                MediaUIState.Media(mediaList, headerLocations)
                             }
 
                             is EpisodesRepo.GetEpisodesResult.Failure -> {
@@ -77,8 +104,7 @@ class MediaViewModel @Inject constructor(
             } else {
                 when (val result = episodesRepo.getEpisodesByQuery(query)) {
                     is EpisodesRepo.GetEpisodesResult.Episodes -> {
-                        episodesMutableStateFlow.value =
-                            MediaUIState.Media(result.episodes, emptyList(), emptyList())
+                        //episodesMutableStateFlow.value = MediaUIState.Media(result.episodes, emptyList(), emptyList())
                     }
 
                     is EpisodesRepo.GetEpisodesResult.Failure -> {

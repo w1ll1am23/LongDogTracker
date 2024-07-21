@@ -2,22 +2,31 @@ package com.example.longdogtracker.features.media.ui
 
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,20 +37,24 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.main.LongDogTopBar
 import com.example.longdogtracker.features.main.TopBarNavigation
+import com.example.longdogtracker.features.media.ui.model.MediaListItem
 import com.example.longdogtracker.features.media.ui.model.MediaUIState
 import com.example.longdogtracker.features.media.ui.model.UiMedia
 import com.example.longdogtracker.features.media.viewmodels.MediaViewModel
 import com.example.longdogtracker.ui.theme.BingoBodyPrimary
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
 import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,106 +130,121 @@ private fun HandleUiState(
                     val selectedMedia = remember {
                         mutableStateOf<UiMedia?>(null)
                     }
-                    LazyColumn {
-                        if (uiState.books.isNotEmpty()) {
-                            stickyHeader {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(BlueyBodyAccentLight)
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(BlueyBodyAccentLight)
+                    val listState = rememberLazyListState()
+                    val coroutineScope = rememberCoroutineScope()
+
+                    LazyColumn(state = listState) {
+                        itemsIndexed(
+                            items = uiState.items,
+                            key = { _, listItem -> listItem.uniqueKey() }) { index, listItem ->
+                            when (listItem) {
+                                is MediaListItem.Header -> {
+                                    Column {
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(BlueyBodyAccentLight)
+                                        ) {
+                                            Column(
+                                                modifier = Modifier.padding(8.dp)
+                                            ) {
+                                                Text(
+                                                    listItem.season,
+                                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                                )
+                                                Text(
+                                                    text = listItem.totalCount,
+                                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                                )
+                                            }
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(text = listItem.longDogs)
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.long_dog_black),
+                                                    modifier = Modifier.size(32.dp),
+                                                    contentDescription = null,
+                                                )
+                                            }
+                                            val currentHeaderLocation =
+                                                uiState.headerLocations.indexOf(index)
+                                            when {
+                                                currentHeaderLocation == 0 && uiState.headerLocations.size > 1 -> {
+                                                    IconButton(onClick = {
+                                                        coroutineScope.launch {
+                                                            listState.scrollToItem(
+                                                                uiState.headerLocations[1]
+                                                            )
+                                                        }
+                                                    }) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.KeyboardArrowDown,
+                                                            contentDescription = null
+                                                        )
+                                                    }
+                                                }
+
+                                                currentHeaderLocation == uiState.headerLocations.size - 1 && uiState.headerLocations.size > 1 -> {
+                                                    IconButton(onClick = {
+                                                        coroutineScope.launch {
+                                                            listState.scrollToItem(
+                                                                uiState.headerLocations[currentHeaderLocation - 1]
+                                                            )
+                                                        }
+                                                    }) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.KeyboardArrowUp,
+                                                            contentDescription = null
+                                                        )
+                                                    }
+                                                }
+
+                                                uiState.headerLocations.size > 2 -> {
+                                                    Row(
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        modifier = Modifier
+                                                            .background(BlueyBodyAccentLight)
+                                                    ) {
+                                                        IconButton(onClick = {
+                                                            coroutineScope.launch {
+                                                                listState.scrollToItem(
+                                                                    uiState.headerLocations[currentHeaderLocation - 1]
+                                                                )
+                                                            }
+                                                        }) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.KeyboardArrowUp,
+                                                                contentDescription = null
+                                                            )
+                                                        }
+                                                        IconButton(onClick = {
+                                                            coroutineScope.launch {
+                                                                listState.scrollToItem(
+                                                                    uiState.headerLocations[currentHeaderLocation + 1]
+                                                                )
+                                                            }
+                                                        }) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.KeyboardArrowDown,
+                                                                contentDescription = null
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                is MediaListItem.Media -> {
+                                    MediaCard(
+                                        uiMedia = listItem.media
                                     ) {
-                                        Text(
-                                            "Books",
-                                            modifier = Modifier.padding(16.dp)
-                                        )
-                                        Text(
-                                            "${uiState.books.size}",
-                                            modifier = Modifier.padding(16.dp)
-                                        )
+                                        selectedMedia.value = listItem.media
+                                        showMediaSheet.value = true
                                     }
-                                }
-                            }
-                            items(uiState.books) { book ->
-                                MediaCard(
-                                    book
-                                ) {
-                                    selectedMedia.value = book
-                                    showMediaSheet.value = true
-                                }
-                            }
-                        }
-                        if (uiState.movies.isNotEmpty()) {
-                            stickyHeader {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(BlueyBodyAccentLight)
-                                ) {
-                                    Text(
-                                        "Movies",
-                                        modifier = Modifier.padding(16.dp)
-                                    )
-                                }
-                            }
-                            items(uiState.movies) { movie ->
-                                MediaCard(
-                                    movie
-                                ) {
-                                    selectedMedia.value = movie
-                                    showMediaSheet.value = true
-                                }
-                            }
-
-                        }
-                        uiState.seasonEpisodeMap.forEach { (season, episodes) ->
-                            stickyHeader {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(BlueyBodyAccentLight)
-                                ) {
-                                    when (season.number) {
-                                        0 -> {
-                                            Text("Specials", modifier = Modifier.padding(16.dp))
-                                        }
-
-                                        999 -> {
-                                            Text("Results", modifier = Modifier.padding(16.dp))
-                                        }
-
-                                        else -> {
-                                            Text(
-                                                "Season: ${season.number}",
-                                                modifier = Modifier.padding(16.dp)
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        text = "${episodes.size} episodes",
-                                        modifier = Modifier.padding(16.dp)
-                                    )
-                                }
-                            }
-
-                            items(episodes) { episode ->
-                                MediaCard(
-                                    episode
-                                ) {
-                                    selectedMedia.value = episode
-                                    showMediaSheet.value = true
                                 }
                             }
                         }
