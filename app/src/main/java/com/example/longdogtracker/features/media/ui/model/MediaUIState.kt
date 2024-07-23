@@ -13,8 +13,8 @@ sealed class MediaUIState {
 }
 
 sealed class MediaListItem {
-    data class Header(val key: Int, val season: String, val longDogs: String, val totalCount: String) : MediaListItem()
-    data class Media(val key: Int, val media: UiMedia) : MediaListItem()
+    data class Header(val key: Int, val index: Int, val season: String, val longDogs: String, val totalCount: String) : MediaListItem()
+    data class Media(val key: Int, val index: Int, val media: UiMedia) : MediaListItem()
 
     fun uniqueKey(): Int {
         return when (this) {

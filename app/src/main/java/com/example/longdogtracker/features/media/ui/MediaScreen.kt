@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -131,119 +131,29 @@ private fun HandleUiState(
                         mutableStateOf<UiMedia?>(null)
                     }
                     val listState = rememberLazyListState()
-                    val coroutineScope = rememberCoroutineScope()
+
 
                     LazyColumn(state = listState) {
-                        itemsIndexed(
-                            items = uiState.items,
-                            key = { _, listItem -> listItem.uniqueKey() }) { index, listItem ->
+                        uiState.items.forEach { listItem ->
                             when (listItem) {
                                 is MediaListItem.Header -> {
-                                    Column {
-                                        Row(
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .background(BlueyBodyAccentLight)
-                                        ) {
-                                            Column(
-                                                modifier = Modifier.padding(8.dp)
-                                            ) {
-                                                Text(
-                                                    listItem.season,
-                                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                                )
-                                                Text(
-                                                    text = listItem.totalCount,
-                                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                                )
-                                            }
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(text = listItem.longDogs)
-                                                Image(
-                                                    painter = painterResource(id = R.drawable.long_dog_black),
-                                                    modifier = Modifier.size(32.dp),
-                                                    contentDescription = null,
-                                                )
-                                            }
-                                            val currentHeaderLocation =
-                                                uiState.headerLocations.indexOf(index)
-                                            when {
-                                                currentHeaderLocation == 0 && uiState.headerLocations.size > 1 -> {
-                                                    IconButton(onClick = {
-                                                        coroutineScope.launch {
-                                                            listState.scrollToItem(
-                                                                uiState.headerLocations[1]
-                                                            )
-                                                        }
-                                                    }) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                                            contentDescription = null
-                                                        )
-                                                    }
-                                                }
-
-                                                currentHeaderLocation == uiState.headerLocations.size - 1 && uiState.headerLocations.size > 1 -> {
-                                                    IconButton(onClick = {
-                                                        coroutineScope.launch {
-                                                            listState.scrollToItem(
-                                                                uiState.headerLocations[currentHeaderLocation - 1]
-                                                            )
-                                                        }
-                                                    }) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.KeyboardArrowUp,
-                                                            contentDescription = null
-                                                        )
-                                                    }
-                                                }
-
-                                                uiState.headerLocations.size > 2 -> {
-                                                    Row(
-                                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        modifier = Modifier
-                                                            .background(BlueyBodyAccentLight)
-                                                    ) {
-                                                        IconButton(onClick = {
-                                                            coroutineScope.launch {
-                                                                listState.scrollToItem(
-                                                                    uiState.headerLocations[currentHeaderLocation - 1]
-                                                                )
-                                                            }
-                                                        }) {
-                                                            Icon(
-                                                                imageVector = Icons.Default.KeyboardArrowUp,
-                                                                contentDescription = null
-                                                            )
-                                                        }
-                                                        IconButton(onClick = {
-                                                            coroutineScope.launch {
-                                                                listState.scrollToItem(
-                                                                    uiState.headerLocations[currentHeaderLocation + 1]
-                                                                )
-                                                            }
-                                                        }) {
-                                                            Icon(
-                                                                imageVector = Icons.Default.KeyboardArrowDown,
-                                                                contentDescription = null
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
+                                    stickyHeader {
+                                        MediaListHeader(
+                                            listState = listState,
+                                            header = listItem,
+                                            headerLocations = uiState.headerLocations
+                                        )
                                     }
                                 }
 
                                 is MediaListItem.Media -> {
-                                    MediaCard(
-                                        uiMedia = listItem.media
-                                    ) {
-                                        selectedMedia.value = listItem.media
-                                        showMediaSheet.value = true
+                                    item {
+                                        MediaCard(
+                                            uiMedia = listItem.media
+                                        ) {
+                                            selectedMedia.value = listItem.media
+                                            showMediaSheet.value = true
+                                        }
                                     }
                                 }
                             }
@@ -296,5 +206,110 @@ private fun HandleUiState(
         }
     }
 
+}
 
+@Composable
+private fun MediaListHeader(
+    listState: LazyListState,
+    header: MediaListItem.Header,
+    headerLocations: List<Int>
+) {
+    val coroutineScope = rememberCoroutineScope()
+    Column {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BlueyBodyAccentLight)
+        ) {
+            Column(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text(
+                    header.season,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Text(
+                    text = header.totalCount,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = header.longDogs)
+                Image(
+                    painter = painterResource(id = R.drawable.long_dog_black),
+                    modifier = Modifier.size(32.dp),
+                    contentDescription = null,
+                )
+            }
+            val currentHeaderLocation =
+                headerLocations.indexOf(header.index)
+            when {
+                currentHeaderLocation == 0 && headerLocations.size > 1 -> {
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            listState.scrollToItem(
+                                headerLocations[1]
+                            )
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+                currentHeaderLocation == headerLocations.size - 1 && headerLocations.size > 1 -> {
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            listState.scrollToItem(
+                                headerLocations[currentHeaderLocation - 1]
+                            )
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+                headerLocations.size > 2 -> {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .background(BlueyBodyAccentLight)
+                    ) {
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                listState.scrollToItem(
+                                    headerLocations[currentHeaderLocation - 1]
+                                )
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowUp,
+                                contentDescription = null
+                            )
+                        }
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                listState.scrollToItem(
+                                    headerLocations[currentHeaderLocation + 1]
+                                )
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

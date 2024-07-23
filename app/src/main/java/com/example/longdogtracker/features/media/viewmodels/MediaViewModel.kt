@@ -63,25 +63,27 @@ class MediaViewModel @Inject constructor(
                                 var count = 0
                                 episodesResult.episodes.forEach { (season, episodes) ->
                                     headerLocations.add(count)
-                                    count += 1
                                     seasons.add(season.number)
+                                    mediaList.add(
+                                        MediaListItem.Header(
+                                            key = season.id,
+                                            index = count,
+                                            season = "Season: ${season.number}",
+                                            longDogs = "${episodes.sumOf { it.longDogsFound }} of ${episodes.sumOf { it.knownLongDogCount }}",
+                                            totalCount = "${episodes.size} episodes"
+                                        )
+                                    )
+                                    count += 1
+                                    episodes.forEach { episode ->
                                         mediaList.add(
-                                            MediaListItem.Header(
-                                                key = season.id,
-                                                season = "Season: ${season.number}",
-                                                longDogs = "${episodes.sumOf { it.longDogsFound }} of ${episodes.sumOf { it.knownLongDogCount }}",
-                                                totalCount = "${episodes.size} episodes"
+                                            MediaListItem.Media(
+                                                index = count,
+                                                key = episode.id,
+                                                media = episode
                                             )
                                         )
-                                        episodes.forEach { episode ->
-                                            count += 1
-                                            mediaList.add(
-                                                MediaListItem.Media(
-                                                    key = episode.id,
-                                                    media = episode
-                                                )
-                                            )
-                                        }
+                                        count += 1
+                                    }
                                 }
                                 MediaUIState.Media(mediaList, headerLocations)
                             }
