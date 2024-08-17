@@ -222,7 +222,7 @@ fun LongDogLocationCard(
     uiLongDogLocation: UiLongDogLocation,
     updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
 ) {
-    var flip by remember { mutableStateOf(false) }
+    var flip by remember { mutableStateOf(uiLongDogLocation.found) }
     var flipRotation by remember { mutableFloatStateOf(0f) }
     val animationSpec = tween<Float>(1000, easing = CubicBezierEasing(0.4f, 0.0f, 0.8f, 0.8f))
     Card(
@@ -235,7 +235,9 @@ fun LongDogLocationCard(
                 cameraDistance = 64 * density
             }
             .clickable {
-                flip = !flip
+                if (!uiLongDogLocation.found) {
+                    flip = !flip
+                }
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(size = 16.dp)
@@ -279,7 +281,7 @@ fun LongDogLocationCardFront(uiLongDogLocation: UiLongDogLocation) {
             .padding(16.dp),
     ) {
         Text(
-            text = "Long dog #${uiLongDogLocation.number}",
+            text = "Long dog #${uiLongDogLocation.number + 1}",
             modifier = Modifier.align(Alignment.TopStart)
         )
         Text(text = "Tap to view location", modifier = Modifier.align(Alignment.Center))
