@@ -51,8 +51,10 @@ import com.example.longdogtracker.features.media.ui.model.MediaListItem
 import com.example.longdogtracker.features.media.ui.model.MediaUIState
 import com.example.longdogtracker.features.media.ui.model.UiMedia
 import com.example.longdogtracker.features.media.viewmodels.MediaViewModel
+import com.example.longdogtracker.features.search.ui.SearchSheet
 import com.example.longdogtracker.ui.theme.BingoBodyPrimary
 import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
+import com.example.longdogtracker.ui.theme.BlueyBodyPrimary
 import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 import kotlinx.coroutines.launch
 
@@ -67,8 +69,16 @@ fun MediaScreen(navigate: () -> Unit) {
         mutableStateOf(false)
     }
 
-    HandleUiState(uiState = uiState.value, viewModel::sheetDismissed, { topBarNavigation ->
+    val showSearchSheet = remember {
+        mutableStateOf(false)
+    }
+
+    HandleUiState(uiState = uiState.value, viewModel::sheetDismissed) { topBarNavigation ->
         when (topBarNavigation) {
+            TopBarNavigation.SEARCH -> {
+                showSearchSheet.value = true
+            }
+
             TopBarNavigation.SETTINGS -> {
                 navigate.invoke()
             }
@@ -77,7 +87,7 @@ fun MediaScreen(navigate: () -> Unit) {
                 showFilterSheet.value = true
             }
         }
-    }, viewModel::search)
+    }
 
     if (showFilterSheet.value) {
         ModalBottomSheet(
@@ -94,6 +104,19 @@ fun MediaScreen(navigate: () -> Unit) {
         }
     }
 
+    if (showSearchSheet.value) {
+        ModalBottomSheet(
+            containerColor = BlueyBodyPrimary,
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            windowInsets = WindowInsets.safeDrawing,
+            onDismissRequest = {
+                showSearchSheet.value = false
+            }) {
+            SearchSheet()
+        }
+    }
+
     LaunchedEffect(key1 = null) {
         Log.d("MediaScreen", "Loading initial state from composable")
         viewModel.loadInitialData()
@@ -106,12 +129,11 @@ private fun HandleUiState(
     uiState: MediaUIState,
     sheetDismissed: () -> Unit,
     topBarNavigate: (TopBarNavigation) -> Unit,
-    search: (String) -> Unit,
 ) {
     Scaffold(
         topBar = {
             LongDogTrackerPrimaryTheme {
-                LongDogTopBar(topBarNavigate, search)
+                LongDogTopBar(topBarNavigate)
             }
         },
     ) { contentPadding ->

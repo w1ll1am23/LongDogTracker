@@ -99,25 +99,6 @@ class MediaViewModel @Inject constructor(
         }
     }
 
-    fun search(query: String) {
-        viewModelScope.launch {
-            if (query.isEmpty()) {
-                loadInitialData()
-            } else {
-                when (val result = episodesRepo.getEpisodesByQuery(query)) {
-                    is EpisodesRepo.GetEpisodesResult.Episodes -> {
-                        //episodesMutableStateFlow.value = MediaUIState.Media(result.episodes, emptyList(), emptyList())
-                    }
-
-                    is EpisodesRepo.GetEpisodesResult.Failure -> {
-                        // No results
-                        Log.d("MediaViewModel", "No Results")
-                    }
-                }
-            }
-        }
-    }
-
     fun sheetDismissed() {
         loadInitialData()
     }
