@@ -84,24 +84,24 @@ fun MediaCard(
                     fontSize = TextUnit(16F, TextUnitType.Sp)
                 )
             }
+            AsyncImage(
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .fillMaxWidth(),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(uiMedia.imageUrl)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .crossfade(true)
+                    .build(),
+                contentScale = if (uiMedia.type is MediaType.Show) ContentScale.FillWidth else ContentScale.Fit,
+                contentDescription = null,
+            )
+            Text(
+                uiMedia.description,
+                fontSize = TextUnit(13F, TextUnitType.Sp)
+            )
         }
-        AsyncImage(
-            modifier = Modifier
-                .padding(vertical = 8.dp)
-                .fillMaxWidth(),
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(uiMedia.imageUrl)
-                .memoryCachePolicy(CachePolicy.ENABLED)
-                .diskCachePolicy(CachePolicy.ENABLED)
-                .crossfade(true)
-                .build(),
-            contentScale = if (uiMedia.type is MediaType.Show) ContentScale.FillWidth else ContentScale.Fit,
-            contentDescription = null,
-        )
-        Text(
-            uiMedia.description,
-            fontSize = TextUnit(13F, TextUnitType.Sp)
-        )
     }
 }
 
