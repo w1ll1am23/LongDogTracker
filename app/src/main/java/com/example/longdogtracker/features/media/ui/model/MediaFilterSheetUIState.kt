@@ -4,8 +4,7 @@ sealed class EpisodeFilterSheetUIState {
     data object Loading : EpisodeFilterSheetUIState()
     data class Filters(
         val seasons: List<Season>,
-        val showMovies: Boolean,
-        val showBooks: Boolean,
+        val hideFound: Boolean,
     ) : EpisodeFilterSheetUIState()
 }
 

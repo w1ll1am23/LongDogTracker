@@ -50,11 +50,6 @@ fun MediaCard(
         shape = RoundedCornerShape(size = 16.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
-            val color = when {
-                uiMedia.longDogsFound > 0 -> BlueyBodySnout
-                uiMedia.knownLongDogCount > 0 && uiMedia.longDogsFound == 0 -> Color.LightGray
-                else -> Color.Black
-            }
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -65,42 +60,63 @@ fun MediaCard(
                     fontSize = TextUnit(16F, TextUnitType.Sp),
                     modifier = Modifier.semantics { heading() }
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = R.drawable.long_dog_black),
-                        colorFilter = ColorFilter.tint(color),
-                        modifier = Modifier.size(32.dp),
-                        contentDescription = null,
-                    )
-                    Text(
-                        text = "x${uiMedia.knownLongDogCount}",
-                        fontSize = TextUnit(13F, TextUnitType.Sp)
-                    )
+
+                Row {
+                    if (uiMedia.longDogsFound > 0) {
+                        LongDogWithCount(color = BlueyBodySnout, count = uiMedia.longDogsFound)
+                    }
+                    if (uiMedia.knownLongDogCount > 0 && uiMedia.longDogsFound != uiMedia.knownLongDogCount) {
+                        LongDogWithCount(
+                            color = Color.LightGray,
+                            count = uiMedia.knownLongDogCount - uiMedia.longDogsFound
+                        )
+                    }
+                    if (uiMedia.knownLongDogCount == 0) {
+                        LongDogWithCount(color = Color.Black, count = 0)
+                    }
                 }
+
             }
+
             if (uiMedia.type is MediaType.Show) {
                 Text(
                     "Season: ${uiMedia.type.season} Episode: ${uiMedia.type.episode}",
                     fontSize = TextUnit(16F, TextUnitType.Sp)
                 )
             }
-            AsyncImage(
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .fillMaxWidth(),
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(uiMedia.imageUrl)
-                    .memoryCachePolicy(CachePolicy.ENABLED)
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .crossfade(true)
-                    .build(),
-                contentScale = if (uiMedia.type is MediaType.Show) ContentScale.FillWidth else ContentScale.Fit,
-                contentDescription = null,
-            )
-            Text(
-                uiMedia.description,
-                fontSize = TextUnit(13F, TextUnitType.Sp)
-            )
         }
+        AsyncImage(
+            modifier = Modifier
+                .padding(vertical = 8.dp)
+                .fillMaxWidth(),
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(uiMedia.imageUrl)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .diskCachePolicy(CachePolicy.ENABLED)
+                .crossfade(true)
+                .build(),
+            contentScale = if (uiMedia.type is MediaType.Show) ContentScale.FillWidth else ContentScale.Fit,
+            contentDescription = null,
+        )
+        Text(
+            uiMedia.description,
+            fontSize = TextUnit(13F, TextUnitType.Sp)
+        )
+    }
+}
+
+@Composable
+private fun LongDogWithCount(color: Color, count: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Image(
+            painter = painterResource(id = R.drawable.long_dog_black),
+            colorFilter = ColorFilter.tint(color),
+            modifier = Modifier.size(32.dp),
+            contentDescription = null,
+        )
+        Text(
+            text = "x$count",
+            fontSize = TextUnit(13F, TextUnitType.Sp)
+        )
     }
 }

@@ -2,7 +2,6 @@ package com.example.longdogtracker.features.media.network
 
 import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbLoginBody
 import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbLoginResponse
-import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbMovie
 import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbSeason
 import com.example.longdogtracker.features.media.network.model.thetvdb.TheTvDbSeries
 import retrofit2.Call
@@ -22,6 +21,4 @@ interface TheTvDbApi {
     @GET("seasons/{id}/extended")
     fun getSeason(@Path("id") id: Int): Call<TheTvDbSeason>
 
-    @GET("movies/341113/extended")
-    fun getMovie(): Call<TheTvDbMovie>
 }

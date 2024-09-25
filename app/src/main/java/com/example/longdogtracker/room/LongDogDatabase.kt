@@ -5,15 +5,12 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [RoomEpisode::class, RoomSeason::class,
-        RoomCharacter::class, RoomMovie::class,
-        RoomBook::class, RoomEpisodeLongDogLocation::class],
+        RoomCharacter::class, RoomEpisodeLongDogLocation::class],
     version = 1
 )
 abstract class LongDogDatabase : RoomDatabase() {
     abstract fun episodeDao(): EpisodeDao
     abstract fun seasonDao(): SeasonDao
     abstract fun characterDao(): CharacterDao
-    abstract fun movieDao(): MovieDao
-    abstract fun bookDao(): BookDao
     abstract fun longDogLocationDao(): LongDogLocationDao
 }

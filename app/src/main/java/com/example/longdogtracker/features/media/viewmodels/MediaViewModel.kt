@@ -3,12 +3,11 @@ package com.example.longdogtracker.features.media.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.longdogtracker.features.media.BooksRepo
 import com.example.longdogtracker.features.media.EpisodesRepo
-import com.example.longdogtracker.features.media.MoviesRepo
 import com.example.longdogtracker.features.media.ui.model.MediaListItem
 import com.example.longdogtracker.features.media.ui.model.MediaUIState
-import com.example.longdogtracker.features.media.ui.model.UiMedia
+import com.example.longdogtracker.features.settings.SettingsPreferences
+import com.example.longdogtracker.features.settings.model.settingFilterFound
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,9 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MediaViewModel @Inject constructor(
     private val episodesRepo: EpisodesRepo,
-    private val moviesRepo: MoviesRepo,
-    private val booksRepo: BooksRepo,
-) : ViewModel() {
+    private val settingsPreferences: SettingsPreferences,
+    ) : ViewModel() {
     private val episodesMutableStateFlow =
         MutableStateFlow<MediaUIState>(MediaUIState.Loading)
     val episodesStateFlow: StateFlow<MediaUIState> = episodesMutableStateFlow
@@ -29,28 +27,7 @@ class MediaViewModel @Inject constructor(
     fun loadInitialData() {
         Log.d("MediaViewModel", "Loading initial state VM")
         viewModelScope.launch {
-            var movies: List<UiMedia> = listOf()
-            when (val moviesResult = moviesRepo.getAllMovies()) {
-                is MoviesRepo.GetMoviesResult.Movies -> {
-                    movies = moviesResult.movies
-                }
-
-                is MoviesRepo.GetMoviesResult.Failure -> {
-                    MediaUIState.Error(moviesResult.errorMessage)
-                }
-
-            }
-            var books: List<UiMedia> = listOf()
-            when (val bookResult = booksRepo.getAllBooks()) {
-                is BooksRepo.GetBooksResult.Books -> {
-                    books = bookResult.books
-                }
-
-                is BooksRepo.GetBooksResult.Failure -> {
-                    MediaUIState.Error(bookResult.errorMessage)
-                }
-
-            }
+            val hideFound = settingsPreferences.readBooleanPreference(settingFilterFound)
             episodesMutableStateFlow.value =
                 when (val seasonsResult = episodesRepo.getSeasonsForSeries()) {
                     is EpisodesRepo.GetSeasonsResult.Seasons -> {
@@ -75,14 +52,16 @@ class MediaViewModel @Inject constructor(
                                     )
                                     count += 1
                                     episodes.forEach { episode ->
-                                        mediaList.add(
-                                            MediaListItem.Media(
-                                                index = count,
-                                                key = episode.id,
-                                                media = episode
+                                        if (episode.knownLongDogCount != episode.longDogsFound || !hideFound) {
+                                            mediaList.add(
+                                                MediaListItem.Media(
+                                                    index = count,
+                                                    key = episode.id,
+                                                    media = episode
+                                                )
                                             )
-                                        )
-                                        count += 1
+                                            count += 1
+                                        }
                                     }
                                 }
                                 MediaUIState.Media(mediaList, headerLocations)

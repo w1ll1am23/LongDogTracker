@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,7 +29,7 @@ fun EpisodeFilterSheet() {
 
     val uiState by viewModel.episodeFilterStateFlow.collectAsState()
 
-    HandleUiState(uiState, viewModel::filterSeason, viewModel::showMovies, viewModel::showBooks)
+    HandleUiState(uiState, viewModel::filterSeason, viewModel::showHideFound)
 
     LaunchedEffect(key1 = null) {
         viewModel.getFilterValues()
@@ -39,8 +40,7 @@ fun EpisodeFilterSheet() {
 private fun HandleUiState(
     uiState: EpisodeFilterSheetUIState,
     filterSeason: (Int, Boolean) -> Unit,
-    filterMovies: (Boolean) -> Unit,
-    filterBooks: (Boolean) -> Unit
+    showHideFound: (Boolean) -> Unit,
 
 ) {
     Box(modifier = Modifier.padding(16.dp)) {
@@ -58,20 +58,24 @@ private fun HandleUiState(
                             }
                         }
                     }
-                    item { Text("Movies:", Modifier.semantics { heading() }) }
+                    item { Text("Hide Found Episodes:", Modifier.semantics { heading() }) }
                     item {
-                        FilterChip(
-                            selected = uiState.showMovies,
-                            onClick = { filterMovies.invoke(!uiState.showMovies) },
-                            label = { Text(text = "Movies") })
+                        Switch(checked = uiState.hideFound , onCheckedChange = showHideFound)
                     }
-                    item { Text("Books:", Modifier.semantics { heading() }) }
-                    item {
-                        FilterChip(
-                            selected = uiState.showBooks,
-                            onClick = { filterBooks.invoke(!uiState.showBooks) },
-                            label = { Text(text = "Books") })
-                    }
+//                    item { Text("Movies:", Modifier.semantics { heading() }) }
+//                    item {
+//                        FilterChip(
+//                            selected = uiState.showMovies,
+//                            onClick = { filterMovies.invoke(!uiState.showMovies) },
+//                            label = { Text(text = "Movies") })
+//                    }
+//                    item { Text("Books:", Modifier.semantics { heading() }) }
+//                    item {
+//                        FilterChip(
+//                            selected = uiState.showBooks,
+//                            onClick = { filterBooks.invoke(!uiState.showBooks) },
+//                            label = { Text(text = "Books") })
+//                    }
                 }
             }
 
