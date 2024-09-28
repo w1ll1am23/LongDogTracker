@@ -1,6 +1,7 @@
 package com.example.longdogtracker.room
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 
@@ -12,10 +13,7 @@ interface LongDogLocationDao {
     @Update(entity = RoomEpisodeLongDogLocation::class)
     fun updateLocation(location: RoomEpisodeLongDogLocationFoundUpdate)
 
-//    @Query("SELECT * FROM longdogs WHERE season IS :season AND episode is :episode")
-//    fun getLocationsByEpisode(season: Int, episode: Int): List<RoomEpisodeLongDogLocation>?
-//
-//    @Query("SELECT * FROM longdogs WHERE season IS :season")
-//    fun getAllBySeason(season: Int): List<RoomEpisodeLongDogLocation>
+    @Insert(entity = RoomEpisodeLongDogLocation::class)
+    fun addNewLocation(location: RoomEpisodeLongDogLocation)
 
 }

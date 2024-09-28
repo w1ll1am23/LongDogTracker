@@ -193,7 +193,7 @@ private fun HandleUiState(
                                     showMediaSheet.value = false
                                     sheetDismissed.invoke()
                                 }) {
-                                MediaSheet(uiMedia = it) {
+                                LongDogLocationSheet(uiMedia = it) {
                                     showMediaSheet.value = false
                                     sheetDismissed.invoke()
                                 }

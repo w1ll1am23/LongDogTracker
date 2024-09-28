@@ -16,6 +16,7 @@ import com.example.longdogtracker.network.LoginServiceInteractor
 import com.example.longdogtracker.room.EpisodeDao
 import com.example.longdogtracker.room.LongDogLocationDao
 import com.example.longdogtracker.room.RoomEpisode
+import com.example.longdogtracker.room.RoomEpisodeLongDogLocation
 import com.example.longdogtracker.room.RoomEpisodeLongDogLocationFoundUpdate
 import com.example.longdogtracker.room.RoomSeason
 import com.example.longdogtracker.room.SeasonDao
@@ -26,6 +27,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import javax.inject.Inject
+import kotlin.random.Random
 
 class EpisodesRepo @Inject constructor(
     private val theTvDbApi: TheTvDbApi,
@@ -133,7 +135,11 @@ class EpisodesRepo @Inject constructor(
                                 location.location,
                                 location.found
                             )
-                        })
+                        },
+                        seasonEpisode = it.seasonEpisode,
+                        season = it.season.toString(),
+                        episode = it.episode.toString()
+                    )
                 }
             }
             val lastServiceFetch = settingsPreferences.readLongPreference(
@@ -217,7 +223,10 @@ class EpisodesRepo @Inject constructor(
                                     location.location,
                                     location.found
                                 )
-                            }
+                            },
+                            seasonEpisode = it.seasonEpisode,
+                            season = it.season.toString(),
+                            episode = it.episode.toString()
                         )
                     }
                 }
@@ -256,7 +265,10 @@ class EpisodesRepo @Inject constructor(
                                         location.location,
                                         location.found
                                     )
-                                }
+                                },
+                                seasonEpisode = it.seasonEpisode,
+                                season = it.season.toString(),
+                                episode = it.episode.toString()
                             )
                         }
                     )
@@ -271,6 +283,27 @@ class EpisodesRepo @Inject constructor(
     ) {
         withContext(Dispatchers.IO) {
             longDogLocationDao.updateLocation(RoomEpisodeLongDogLocationFoundUpdate(id, found))
+        }
+    }
+
+    suspend fun addNewLongDogLocation(
+        uiMedia: UiMedia,
+        location: String
+    ) {
+        withContext(Dispatchers.IO) {
+            val locationId =
+                uiMedia.season.toInt() * 1000 + uiMedia.episode.toInt() * 10 + (uiMedia.longDogLocations?.let {
+                    it.size + 1
+                } ?: 0)
+            longDogLocationDao.addNewLocation(
+                RoomEpisodeLongDogLocation(
+                    longDogLocationId = locationId,
+                    seasonEpisode = uiMedia.seasonEpisode,
+                    location = location,
+                    found = true,
+                    userAdded = true
+                )
+            )
         }
     }
 

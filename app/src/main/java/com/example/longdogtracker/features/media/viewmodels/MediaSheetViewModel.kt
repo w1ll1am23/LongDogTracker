@@ -24,4 +24,10 @@ class MediaSheetViewModel @Inject constructor(private val episodesRepo: Episodes
             episodesRepo.updateLocationFoundStat(locationId, found)
         }
     }
+
+    fun addNewLongDogLocation(uiMedia: UiMedia, location: String) {
+        viewModelScope.launch {
+            episodesRepo.addNewLongDogLocation(uiMedia, location)
+        }
+    }
 }

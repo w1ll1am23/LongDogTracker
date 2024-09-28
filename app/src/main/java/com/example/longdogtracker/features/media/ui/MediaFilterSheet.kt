@@ -29,7 +29,7 @@ fun EpisodeFilterSheet() {
 
     val uiState by viewModel.episodeFilterStateFlow.collectAsState()
 
-    HandleUiState(uiState, viewModel::filterSeason, viewModel::showHideFound)
+    HandleUiState(uiState, viewModel::filterSeason, viewModel::showHideFound, viewModel::showHideUnknown)
 
     LaunchedEffect(key1 = null) {
         viewModel.getFilterValues()
@@ -41,7 +41,7 @@ private fun HandleUiState(
     uiState: EpisodeFilterSheetUIState,
     filterSeason: (Int, Boolean) -> Unit,
     showHideFound: (Boolean) -> Unit,
-
+    showHideUnknown: (Boolean) -> Unit,
 ) {
     Box(modifier = Modifier.padding(16.dp)) {
         when (uiState) {
@@ -62,20 +62,10 @@ private fun HandleUiState(
                     item {
                         Switch(checked = uiState.hideFound , onCheckedChange = showHideFound)
                     }
-//                    item { Text("Movies:", Modifier.semantics { heading() }) }
-//                    item {
-//                        FilterChip(
-//                            selected = uiState.showMovies,
-//                            onClick = { filterMovies.invoke(!uiState.showMovies) },
-//                            label = { Text(text = "Movies") })
-//                    }
-//                    item { Text("Books:", Modifier.semantics { heading() }) }
-//                    item {
-//                        FilterChip(
-//                            selected = uiState.showBooks,
-//                            onClick = { filterBooks.invoke(!uiState.showBooks) },
-//                            label = { Text(text = "Books") })
-//                    }
+                    item { Text("Hide Unknown Long Dog Episodes:", Modifier.semantics { heading() }) }
+                    item {
+                        Switch(checked = uiState.hideUnknown , onCheckedChange = showHideUnknown)
+                    }
                 }
             }
 

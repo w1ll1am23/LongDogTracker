@@ -7,6 +7,7 @@ import com.example.longdogtracker.features.media.ui.model.EpisodeFilterSheetUISt
 import com.example.longdogtracker.features.media.ui.model.Season
 import com.example.longdogtracker.features.settings.SettingsPreferences
 import com.example.longdogtracker.features.settings.model.settingFilterFound
+import com.example.longdogtracker.features.settings.model.settingFilterUnknown
 import com.example.longdogtracker.features.settings.model.settingSeasonFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,7 @@ class MediaFilterSheetViewModel @Inject constructor(
 
     private var seasons: List<Season> = emptyList()
     private var hideFound: Boolean = false
+    private var hideUnknown: Boolean = false
 
     fun filterSeason(seasonNumber: Int, selected: Boolean) {
         val newSeasons: MutableList<Season> = mutableListOf()
@@ -44,14 +46,21 @@ class MediaFilterSheetViewModel @Inject constructor(
             seasons.filter { it.selected }.map { it.number })
 
         episodeFilterMutableStateFlow.value =
-            EpisodeFilterSheetUIState.Filters(seasons, hideFound)
+            EpisodeFilterSheetUIState.Filters(seasons, hideFound, hideUnknown)
     }
 
     fun showHideFound(hide: Boolean) {
         settingsPreferences.writeBooleanPreference(settingFilterFound, hide)
         hideFound = hide
         episodeFilterMutableStateFlow.value =
-            EpisodeFilterSheetUIState.Filters(seasons, hideFound)
+            EpisodeFilterSheetUIState.Filters(seasons, hideFound, hideUnknown)
+    }
+
+    fun showHideUnknown(hide: Boolean) {
+        settingsPreferences.writeBooleanPreference(settingFilterUnknown, hide)
+        hideUnknown = hide
+        episodeFilterMutableStateFlow.value =
+            EpisodeFilterSheetUIState.Filters(seasons, hideFound, hideUnknown)
     }
 
     fun getFilterValues() {
@@ -71,7 +80,7 @@ class MediaFilterSheetViewModel @Inject constructor(
             seasons = seasonNumbers.map { Season(it, seasonFilter.contains(it)) }
             hideFound = settingsPreferences.readBooleanPreference(settingFilterFound)
             episodeFilterMutableStateFlow.value =
-                EpisodeFilterSheetUIState.Filters(seasons, hideFound)
+                EpisodeFilterSheetUIState.Filters(seasons, hideFound, hideUnknown)
         }
 
     }

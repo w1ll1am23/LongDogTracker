@@ -5,6 +5,7 @@ sealed class EpisodeFilterSheetUIState {
     data class Filters(
         val seasons: List<Season>,
         val hideFound: Boolean,
+        val hideUnknown: Boolean,
     ) : EpisodeFilterSheetUIState()
 }
 

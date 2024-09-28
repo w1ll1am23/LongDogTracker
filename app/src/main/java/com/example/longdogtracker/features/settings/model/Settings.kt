@@ -6,11 +6,9 @@ const val settingOauthToken = "OAUTH_TOKEN"
 const val settingResetCache = "RESET_CACHE"
 const val settingSeasonFilter = "SEASON_FILTER"
 const val settingFilterFound = "FOUND_FILTER"
+const val settingFilterUnknown = "UNKNOWN_FILTER"
 const val settingLastFetchSeasonsFromService = "LAST_FETCH_SEASONS_FROM_SERVICE"
 const val settingLastFetchEpisodesFromService = "LAST_FETCH_EPISODES_FROM_SERVICE"
-
-
-
 
 val oauthToken = Setting(
     id = settingOauthToken,

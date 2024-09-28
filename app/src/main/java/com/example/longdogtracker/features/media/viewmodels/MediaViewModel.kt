@@ -8,6 +8,7 @@ import com.example.longdogtracker.features.media.ui.model.MediaListItem
 import com.example.longdogtracker.features.media.ui.model.MediaUIState
 import com.example.longdogtracker.features.settings.SettingsPreferences
 import com.example.longdogtracker.features.settings.model.settingFilterFound
+import com.example.longdogtracker.features.settings.model.settingFilterUnknown
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,7 @@ import javax.inject.Inject
 class MediaViewModel @Inject constructor(
     private val episodesRepo: EpisodesRepo,
     private val settingsPreferences: SettingsPreferences,
-    ) : ViewModel() {
+) : ViewModel() {
     private val episodesMutableStateFlow =
         MutableStateFlow<MediaUIState>(MediaUIState.Loading)
     val episodesStateFlow: StateFlow<MediaUIState> = episodesMutableStateFlow
@@ -27,7 +28,9 @@ class MediaViewModel @Inject constructor(
     fun loadInitialData() {
         Log.d("MediaViewModel", "Loading initial state VM")
         viewModelScope.launch {
+            // TODO: Move this to the repo
             val hideFound = settingsPreferences.readBooleanPreference(settingFilterFound)
+            val hideUnknown = settingsPreferences.readBooleanPreference(settingFilterUnknown)
             episodesMutableStateFlow.value =
                 when (val seasonsResult = episodesRepo.getSeasonsForSeries()) {
                     is EpisodesRepo.GetSeasonsResult.Seasons -> {
@@ -52,16 +55,20 @@ class MediaViewModel @Inject constructor(
                                     )
                                     count += 1
                                     episodes.forEach { episode ->
-                                        if (episode.knownLongDogCount != episode.longDogsFound || !hideFound) {
-                                            mediaList.add(
-                                                MediaListItem.Media(
-                                                    index = count,
-                                                    key = episode.id,
-                                                    media = episode
-                                                )
-                                            )
-                                            count += 1
+                                        if (episode.knownLongDogCount == 0 && hideUnknown) {
+                                            return@forEach
                                         }
+                                        if ((episode.longDogsFound == episode.knownLongDogCount && episode.knownLongDogCount != 0) && hideFound) {
+                                            return@forEach
+                                        }
+                                        mediaList.add(
+                                            MediaListItem.Media(
+                                                index = count,
+                                                key = episode.id,
+                                                media = episode
+                                            )
+                                        )
+                                        count += 1
                                     }
                                 }
                                 MediaUIState.Media(mediaList, headerLocations)

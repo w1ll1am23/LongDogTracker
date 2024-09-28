@@ -18,12 +18,13 @@ def main():
     locations_json_file = open("./known_longdogs.json", "r")
     locations_json = json.load(locations_json_file)
 
-    id = 0
     for season, episodes in locations_json["seasons"].items():
         for episode, locations in episodes.items():
+            location_count = 0
             for location in locations:
-                id += 1
-                add_row(cur, id, str(int(season)) + str(int(episode)), location, False, False)
+                location_id = int(season) * 1000 + int(episode) * 10 + location_count
+                add_row(cur, location_id, str(int(season)) + str(int(episode)), location, False, False)
+                location_count = location_count + 1
     con.commit()
 
 

@@ -1,5 +1,6 @@
 package com.example.longdogtracker.features.media.ui
 
+import android.provider.CallLog.Locations
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -60,13 +61,14 @@ import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 import kotlinx.coroutines.delay
 
 @Composable
-fun MediaSheet(uiMedia: UiMedia, dismissSheet: () -> Unit) {
+fun LongDogLocationSheet(uiMedia: UiMedia, dismissSheet: () -> Unit) {
     val viewModel = hiltViewModel<MediaSheetViewModel>()
 
     HandleUiState(
         uiMedia = uiMedia,
         dismissSheet = dismissSheet,
-        updateLongDogLocationFoundStatus = viewModel::updateLongDogLocationFoundStatus
+        updateLongDogLocationFoundStatus = viewModel::updateLongDogLocationFoundStatus,
+        addNewLongDogLocation = viewModel::addNewLongDogLocation
     )
 
     LaunchedEffect(key1 = uiMedia) {
@@ -81,11 +83,14 @@ private fun HandleUiState(
     uiMedia: UiMedia,
     dismissSheet: () -> Unit,
     updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
+    addNewLongDogLocation: (UiMedia, String) -> Unit,
 ) {
+    var showNewLongDogLocation by remember {
+        mutableStateOf(false)
+    }
     Scaffold(
         floatingActionButton = {
-            Button(onClick = {
-            }) {
+            Button(onClick = { showNewLongDogLocation = true }) {
                 Text(text = "Add Long Dog")
             }
         },
@@ -112,81 +117,23 @@ private fun HandleUiState(
                     Icon(imageVector = Icons.Default.Clear, contentDescription = null)
                 }
             }
-            LazyColumn {
-                uiMedia.longDogLocations?.let { locations ->
-                    items(locations) { location ->
-                        LongDogLocationCard(
-                            uiLongDogLocation = location,
-                            updateLongDogLocationFoundStatus = updateLongDogLocationFoundStatus
-                        )
+            if (!showNewLongDogLocation) {
+                LazyColumn {
+                    uiMedia.longDogLocations?.let { locations ->
+                        items(locations) { location ->
+                            LongDogLocationCard(
+                                uiLongDogLocation = location,
+                                updateLongDogLocationFoundStatus = updateLongDogLocationFoundStatus
+                            )
+                        }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun LongDogStepper(count: Int, updateQuantity: (Int) -> Unit) {
-    val currentCount = remember {
-        mutableIntStateOf(count)
-    }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton(
-            enabled = currentCount.intValue != 0,
-            onClick = {
-                currentCount.intValue -= 1
-                updateQuantity(currentCount.intValue)
-            },
-            colors = IconButtonColors(
-                containerColor = BlueyBodyAccentDark,
-                contentColor = BlueyBodyAccentLight,
-                disabledContentColor = Color.LightGray,
-                disabledContainerColor = Color.Gray
-            )
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.remove),
-                contentDescription = "",
-                tint = BlueyBodyAccentLight
-            )
-        }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            val dogColor = when {
-                currentCount.intValue == 0 -> {
-                    Color.LightGray
-                }
-
-                else -> {
-                    BlueyBodySnout
+            if (showNewLongDogLocation) {
+                NewLongDogLocationCard { location ->
+                    addNewLongDogLocation(uiMedia, location)
                 }
             }
-            Image(
-                painter = painterResource(id = R.drawable.long_dog_black),
-                colorFilter = ColorFilter.tint(dogColor),
-                modifier = Modifier.size(32.dp),
-                contentDescription = null,
-            )
-            Text(currentCount.intValue.toString())
-        }
-
-        IconButton(
-            onClick = {
-                currentCount.intValue += 1
-                updateQuantity(currentCount.intValue)
-            },
-            colors = IconButtonColors(
-                containerColor = BlueyBodyAccentDark,
-                contentColor = BlueyBodyAccentLight,
-                disabledContentColor = Color.LightGray,
-                disabledContainerColor = Color.Gray
-            )
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.add),
-                contentDescription = "",
-                tint = BlueyBodyAccentLight
-            )
         }
     }
 }
@@ -204,16 +151,24 @@ fun NewLongDogLocationCard(updateLocation: (String) -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(size = 16.dp)
     ) {
-        TextField(
-            value = text,
-            onValueChange = { textUpdate ->
-                text = textUpdate
-            },
-            placeholder = { Text(text = "Enter the new location here") })
-    }
-    LaunchedEffect(key1 = text) {
-        delay(500)
-        updateLocation.invoke(text)
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            TextField(
+                value = text,
+                onValueChange = { textUpdate ->
+                    text = textUpdate
+                },
+                placeholder = { Text(text = "Enter the new location here") })
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomEnd) {
+                Button(onClick = { updateLocation(text) }) {
+                    Text(text = "Save")
+                }
+            }
+        }
     }
 }
 
@@ -310,16 +265,4 @@ fun LongDogLocationCardBack(
         })
     }
 
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LongDogStepperPreview() {
-    LongDogTrackerPrimaryTheme {
-        Column {
-            LongDogStepper(0, {})
-            LongDogStepper(1, {})
-
-        }
-    }
 }
