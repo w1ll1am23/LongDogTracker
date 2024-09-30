@@ -30,13 +30,12 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.longdogtracker.R
-import com.example.longdogtracker.features.media.ui.model.MediaType
-import com.example.longdogtracker.features.media.ui.model.UiMedia
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
 import com.example.longdogtracker.ui.theme.BlueyBodySnout
 
 @Composable
 fun MediaCard(
-    uiMedia: UiMedia,
+    uiEpisode: UiEpisode,
     showMediaSheet: () -> Unit
 ) {
 
@@ -55,50 +54,48 @@ fun MediaCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    uiMedia.title,
+                    uiEpisode.title,
                     fontWeight = FontWeight.Bold,
                     fontSize = TextUnit(16F, TextUnitType.Sp),
                     modifier = Modifier.semantics { heading() }
                 )
 
                 Row {
-                    if (uiMedia.longDogsFound > 0) {
-                        LongDogWithCount(color = BlueyBodySnout, count = uiMedia.longDogsFound)
+                    if (uiEpisode.longDogsFound > 0) {
+                        LongDogWithCount(color = BlueyBodySnout, count = uiEpisode.longDogsFound)
                     }
-                    if (uiMedia.knownLongDogCount > 0 && uiMedia.longDogsFound != uiMedia.knownLongDogCount) {
+                    if (uiEpisode.knownLongDogCount > 0 && uiEpisode.longDogsFound != uiEpisode.knownLongDogCount) {
                         LongDogWithCount(
                             color = Color.LightGray,
-                            count = uiMedia.knownLongDogCount - uiMedia.longDogsFound
+                            count = uiEpisode.knownLongDogCount - uiEpisode.longDogsFound
                         )
                     }
-                    if (uiMedia.knownLongDogCount == 0) {
+                    if (uiEpisode.knownLongDogCount == 0) {
                         LongDogWithCount(color = Color.Black, count = 0)
                     }
                 }
 
             }
 
-            if (uiMedia.type is MediaType.Show) {
-                Text(
-                    "Season: ${uiMedia.type.season} Episode: ${uiMedia.type.episode}",
-                    fontSize = TextUnit(16F, TextUnitType.Sp)
-                )
-            }
+            Text(
+                "Season: ${uiEpisode.season} Episode: ${uiEpisode.episode}",
+                fontSize = TextUnit(16F, TextUnitType.Sp)
+            )
             AsyncImage(
                 modifier = Modifier
                     .padding(vertical = 8.dp)
                     .fillMaxWidth(),
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(uiMedia.imageUrl)
+                    .data(uiEpisode.imageUrl)
                     .memoryCachePolicy(CachePolicy.ENABLED)
                     .diskCachePolicy(CachePolicy.ENABLED)
                     .crossfade(true)
                     .build(),
-                contentScale = if (uiMedia.type is MediaType.Show) ContentScale.FillWidth else ContentScale.Fit,
+                contentScale = ContentScale.FillWidth,
                 contentDescription = null,
             )
             Text(
-                uiMedia.description,
+                uiEpisode.description,
                 fontSize = TextUnit(13F, TextUnitType.Sp)
             )
         }

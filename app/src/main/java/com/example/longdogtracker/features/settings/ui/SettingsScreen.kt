@@ -79,8 +79,8 @@ private fun HandleSettingsState(state: SettingsState) {
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             )
                             when (item) {
-                                is UiSetting.ResetSetting -> {
-                                    ResetSetting(item)
+                                is UiSetting.ActionSetting -> {
+                                    ActionSetting(item)
                                 }
                                 is UiSetting.StringSetting -> {
                                     StringSetting(item)
@@ -124,16 +124,16 @@ private fun StringSetting(setting: UiSetting.StringSetting) {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Button(onClick = { setting.updateSetting(setting.id, text) }, modifier = Modifier.weight(.3f)) {
-            Text(stringResource(id = R.string.setting_save_button))
+            Text(stringResource(id = R.string.save_button))
         }
     }
 
 }
 
 @Composable
-private fun ResetSetting(setting: UiSetting.ResetSetting) {
+private fun ActionSetting(setting: UiSetting.ActionSetting) {
     Button(onClick = { setting.updateSetting.invoke(setting.id) }) {
-        Text(stringResource(id = R.string.setting_clear_cache_button))
+        Text(stringResource(id = setting.actionCopy))
     }
 
 }

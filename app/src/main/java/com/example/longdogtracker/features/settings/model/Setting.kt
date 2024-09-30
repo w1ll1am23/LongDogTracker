@@ -6,5 +6,5 @@ data class Setting(
     val id: String,
     @StringRes val title: Int,
     @StringRes val description: Int,
-    val type: SettingType = SettingType.ON_OFF,
+    val type: SettingType,
 )

@@ -2,12 +2,11 @@
     <string name="app_name">Long Dog Tracker</string>
 
     <!-- Settings-->
-    <string name="setting_auth_token">Oauth Token</string>
-    <string name="setting_auth_token_description">The oauth token for TheTVDB</string>
-    <string name="setting_reset_cache">Reset the Cache</string>
-    <string name="setting_reset_cache_description">Empty the database</string>
-    <string name="setting_clear_cache_button">CLEAR CACHE</string>
-    <string name="setting_save_button">SAVE</string>
+    <string name="setting_backup">Backup</string>
+    <string name="setting_backup_description">Exports current status of all Long Dog locations.</string>
+    <string name="setting_reset">Reset</string>
+    <string name="setting_reset_description">Resets the app to default state.</string>
+
 
     <!-- Menu-->
     <string name="menu_settings">Settings</string>
@@ -31,5 +30,8 @@
 
     <!-- Search-->
     <string name="search_emtpy_state_message">Search for episode name, description, or long dog location.</string>
+
+    <!-- General-->
+    <string name="save_button">Save</string>
 
 </resources>

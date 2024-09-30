@@ -105,7 +105,7 @@ private fun HandleSearchState(state: SearchViewModel.SearchUIState, search: (Str
                     state.items.forEach {
                         item {
                             MediaCard(
-                                uiMedia = it.media
+                                uiEpisode = it.media
                             ) {}
                         }
                     }

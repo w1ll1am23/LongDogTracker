@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.longdogtracker.R
 import com.example.longdogtracker.features.media.EpisodesRepo
 import com.example.longdogtracker.features.media.ui.model.MediaListItem
-import com.example.longdogtracker.features.media.ui.model.UiMedia
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,7 +34,7 @@ class SearchViewModel @Inject constructor(
             } else {
                 when (val result = episodesRepo.getEpisodesByQuery(query)) {
                     is EpisodesRepo.GetEpisodesResult.Episodes -> {
-                        val episodeResults = mutableListOf<UiMedia>()
+                        val episodeResults = mutableListOf<UiEpisode>()
                         result.episodes.forEach { (_, episodes) ->
                             episodeResults.addAll(episodes)
                         }

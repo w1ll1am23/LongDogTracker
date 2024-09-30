@@ -19,18 +19,19 @@ sealed class UiSetting {
         val updateSetting: (id: String, value: String?) -> Unit
     ) : UiSetting()
 
-    data class ResetSetting(
+    data class ActionSetting(
         val id: String,
         @StringRes val title: Int,
         @StringRes val description: Int,
-        val updateSetting: (id: String) -> Unit
+        val updateSetting: (id: String) -> Unit,
+        @StringRes val actionCopy: Int,
     ) : UiSetting()
 
     fun id(): String {
         return when (this) {
             is ToggleSetting -> this.id
             is StringSetting -> this.id
-            is ResetSetting -> this.id
+            is ActionSetting -> this.id
         }
     }
 
@@ -38,7 +39,7 @@ sealed class UiSetting {
         return when (this) {
             is ToggleSetting -> this.title
             is StringSetting -> this.title
-            is ResetSetting -> this.title
+            is ActionSetting -> this.title
         }
     }
 
@@ -46,7 +47,7 @@ sealed class UiSetting {
         return when (this) {
             is ToggleSetting -> this.description
             is StringSetting -> this.description
-            is ResetSetting -> this.description
+            is ActionSetting -> this.description
         }
     }
 }

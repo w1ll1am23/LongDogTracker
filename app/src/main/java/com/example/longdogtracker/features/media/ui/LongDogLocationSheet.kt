@@ -1,10 +1,8 @@
 package com.example.longdogtracker.features.media.ui
 
-import android.provider.CallLog.Locations
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,7 +23,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -34,45 +30,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.longdogtracker.R
 import com.example.longdogtracker.features.media.ui.model.UiLongDogLocation
-import com.example.longdogtracker.features.media.ui.model.UiMedia
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
 import com.example.longdogtracker.features.media.viewmodels.MediaSheetViewModel
-import com.example.longdogtracker.ui.theme.BlueyBodyAccentDark
-import com.example.longdogtracker.ui.theme.BlueyBodyAccentLight
-import com.example.longdogtracker.ui.theme.BlueyBodySnout
-import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
-import kotlinx.coroutines.delay
 
 @Composable
-fun LongDogLocationSheet(uiMedia: UiMedia, dismissSheet: () -> Unit) {
+fun LongDogLocationSheet(uiEpisode: UiEpisode, dismissSheet: () -> Unit) {
     val viewModel = hiltViewModel<MediaSheetViewModel>()
 
     HandleUiState(
-        uiMedia = uiMedia,
+        uiEpisode = uiEpisode,
         dismissSheet = dismissSheet,
         updateLongDogLocationFoundStatus = viewModel::updateLongDogLocationFoundStatus,
         addNewLongDogLocation = viewModel::addNewLongDogLocation
     )
 
-    LaunchedEffect(key1 = uiMedia) {
-        viewModel.initEpisode(uiMedia)
+    LaunchedEffect(key1 = uiEpisode) {
+        viewModel.initEpisode(uiEpisode)
     }
 
 
@@ -80,10 +65,10 @@ fun LongDogLocationSheet(uiMedia: UiMedia, dismissSheet: () -> Unit) {
 
 @Composable
 private fun HandleUiState(
-    uiMedia: UiMedia,
+    uiEpisode: UiEpisode,
     dismissSheet: () -> Unit,
     updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
-    addNewLongDogLocation: (UiMedia, String) -> Unit,
+    addNewLongDogLocation: (UiEpisode, String) -> Unit,
 ) {
     var showNewLongDogLocation by remember {
         mutableStateOf(false)
@@ -119,7 +104,7 @@ private fun HandleUiState(
             }
             if (!showNewLongDogLocation) {
                 LazyColumn {
-                    uiMedia.longDogLocations?.let { locations ->
+                    uiEpisode.longDogLocations?.let { locations ->
                         items(locations) { location ->
                             LongDogLocationCard(
                                 uiLongDogLocation = location,
@@ -131,7 +116,7 @@ private fun HandleUiState(
             }
             if (showNewLongDogLocation) {
                 NewLongDogLocationCard { location ->
-                    addNewLongDogLocation(uiMedia, location)
+                    addNewLongDogLocation(uiEpisode, location)
                 }
             }
         }

@@ -49,7 +49,7 @@ import com.example.longdogtracker.features.main.LongDogTopBar
 import com.example.longdogtracker.features.main.TopBarNavigation
 import com.example.longdogtracker.features.media.ui.model.MediaListItem
 import com.example.longdogtracker.features.media.ui.model.MediaUIState
-import com.example.longdogtracker.features.media.ui.model.UiMedia
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
 import com.example.longdogtracker.features.media.viewmodels.MediaViewModel
 import com.example.longdogtracker.features.search.ui.SearchSheet
 import com.example.longdogtracker.ui.theme.BingoBodyPrimary
@@ -150,7 +150,7 @@ private fun HandleUiState(
                         mutableStateOf(false)
                     }
                     val selectedMedia = remember {
-                        mutableStateOf<UiMedia?>(null)
+                        mutableStateOf<UiEpisode?>(null)
                     }
                     val listState = rememberLazyListState()
 
@@ -171,7 +171,7 @@ private fun HandleUiState(
                                 is MediaListItem.Media -> {
                                     item {
                                         MediaCard(
-                                            uiMedia = listItem.media
+                                            uiEpisode = listItem.media
                                         ) {
                                             selectedMedia.value = listItem.media
                                             showMediaSheet.value = true
@@ -193,7 +193,7 @@ private fun HandleUiState(
                                     showMediaSheet.value = false
                                     sheetDismissed.invoke()
                                 }) {
-                                LongDogLocationSheet(uiMedia = it) {
+                                LongDogLocationSheet(uiEpisode = it) {
                                     showMediaSheet.value = false
                                     sheetDismissed.invoke()
                                 }
