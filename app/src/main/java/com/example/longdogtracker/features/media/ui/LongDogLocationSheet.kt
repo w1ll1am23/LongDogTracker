@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
@@ -35,12 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.longdogtracker.R
 import com.example.longdogtracker.features.media.ui.model.UiLongDogLocation
 import com.example.longdogtracker.features.media.ui.model.UiEpisode
 import com.example.longdogtracker.features.media.viewmodels.MediaSheetViewModel
@@ -53,7 +58,8 @@ fun LongDogLocationSheet(uiEpisode: UiEpisode, dismissSheet: () -> Unit) {
         uiEpisode = uiEpisode,
         dismissSheet = dismissSheet,
         updateLongDogLocationFoundStatus = viewModel::updateLongDogLocationFoundStatus,
-        addNewLongDogLocation = viewModel::addNewLongDogLocation
+        addNewLongDogLocation = viewModel::addNewLongDogLocation,
+        deleteLongDogLocation = viewModel::deleteLongDogLocation,
     )
 
     LaunchedEffect(key1 = uiEpisode) {
@@ -69,6 +75,7 @@ private fun HandleUiState(
     dismissSheet: () -> Unit,
     updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
     addNewLongDogLocation: (UiEpisode, String) -> Unit,
+    deleteLongDogLocation: (Int) -> Unit,
 ) {
     var showNewLongDogLocation by remember {
         mutableStateOf(false)
@@ -108,7 +115,8 @@ private fun HandleUiState(
                         items(locations) { location ->
                             LongDogLocationCard(
                                 uiLongDogLocation = location,
-                                updateLongDogLocationFoundStatus = updateLongDogLocationFoundStatus
+                                updateLongDogLocationFoundStatus = updateLongDogLocationFoundStatus,
+                                deleteLongDogLocation = deleteLongDogLocation,
                             )
                         }
                     }
@@ -161,6 +169,7 @@ fun NewLongDogLocationCard(updateLocation: (String) -> Unit) {
 fun LongDogLocationCard(
     uiLongDogLocation: UiLongDogLocation,
     updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
+    deleteLongDogLocation: (Int) -> Unit,
 ) {
     var flip by remember { mutableStateOf(uiLongDogLocation.found) }
     var flipRotation by remember { mutableFloatStateOf(0f) }
@@ -187,7 +196,11 @@ fun LongDogLocationCard(
                 uiLongDogLocation
             )
         } else {
-            LongDogLocationCardBack(uiLongDogLocation, updateLongDogLocationFoundStatus)
+            LongDogLocationCardBack(
+                uiLongDogLocation,
+                updateLongDogLocationFoundStatus,
+                deleteLongDogLocation
+            )
         }
     }
 
@@ -230,24 +243,47 @@ fun LongDogLocationCardFront(uiLongDogLocation: UiLongDogLocation) {
 
 @Composable
 fun LongDogLocationCardBack(
-    uiLongDogLocation: UiLongDogLocation, updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
+    uiLongDogLocation: UiLongDogLocation,
+    updateLongDogLocationFoundStatus: (Int, Boolean) -> Unit,
+    deleteLongDogLocation: (Int) -> Unit,
 ) {
     var checked by remember {
         mutableStateOf(uiLongDogLocation.found)
     }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
         modifier = Modifier
-            .graphicsLayer {
-                rotationY = 180f
-            }
+            .fillMaxSize()
             .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = uiLongDogLocation.location, modifier = Modifier.weight(0.8f))
-        Checkbox(checked = checked, onCheckedChange = {
-            checked = !checked
-            updateLongDogLocationFoundStatus.invoke(uiLongDogLocation.id, checked)
-        })
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .graphicsLayer {
+                    rotationY = 180f
+                }
+        ) {
+            Text(text = uiLongDogLocation.location, modifier = Modifier.weight(0.8f))
+            Checkbox(checked = checked, onCheckedChange = {
+                checked = !checked
+                updateLongDogLocationFoundStatus.invoke(uiLongDogLocation.id, checked)
+            })
+        }
+        // Bottom start because of the rotation
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomStart) {
+            IconButton(onClick = { deleteLongDogLocation(uiLongDogLocation.id) }) {
+                Icon(painter = painterResource(id = R.drawable.delete), null, tint = Color.Red)
+            }
+        }
     }
 
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LocationBackPreview() {
+    LongDogLocationCardBack(
+        UiLongDogLocation(1, 1, "Location text example", false),
+        { _, _ -> },
+        {})
 }

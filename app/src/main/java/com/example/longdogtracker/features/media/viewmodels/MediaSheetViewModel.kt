@@ -30,4 +30,10 @@ class MediaSheetViewModel @Inject constructor(private val episodesRepo: Episodes
             episodesRepo.addNewLongDogLocation(uiEpisode, location)
         }
     }
+
+    fun deleteLongDogLocation(locationId: Int) {
+        viewModelScope.launch {
+            episodesRepo.deleteLocationFoundStat(locationId)
+        }
+    }
 }

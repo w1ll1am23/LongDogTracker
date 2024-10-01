@@ -16,6 +16,7 @@ import com.example.longdogtracker.room.EpisodeDao
 import com.example.longdogtracker.room.LongDogLocationDao
 import com.example.longdogtracker.room.RoomEpisode
 import com.example.longdogtracker.room.RoomEpisodeLongDogLocation
+import com.example.longdogtracker.room.RoomEpisodeLongDogLocationDelete
 import com.example.longdogtracker.room.RoomEpisodeLongDogLocationFoundUpdate
 import com.example.longdogtracker.room.RoomSeason
 import com.example.longdogtracker.room.SeasonDao
@@ -278,6 +279,14 @@ class EpisodesRepo @Inject constructor(
     ) {
         withContext(Dispatchers.IO) {
             longDogLocationDao.updateLocation(RoomEpisodeLongDogLocationFoundUpdate(id, found))
+        }
+    }
+
+    suspend fun deleteLocationFoundStat(
+        id: Int,
+    ) {
+        withContext(Dispatchers.IO) {
+            longDogLocationDao.deleteLocation(RoomEpisodeLongDogLocationDelete(id))
         }
     }
 

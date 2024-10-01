@@ -1,6 +1,7 @@
 package com.example.longdogtracker.room
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -15,5 +16,8 @@ interface LongDogLocationDao {
 
     @Insert(entity = RoomEpisodeLongDogLocation::class)
     fun addNewLocation(location: RoomEpisodeLongDogLocation)
+
+    @Delete(entity = RoomEpisodeLongDogLocation::class)
+    fun deleteLocation(location: RoomEpisodeLongDogLocationDelete)
 
 }

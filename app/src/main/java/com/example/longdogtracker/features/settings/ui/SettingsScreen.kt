@@ -17,14 +17,18 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,13 +38,15 @@ import com.example.longdogtracker.R
 import com.example.longdogtracker.features.settings.model.SettingsState
 import com.example.longdogtracker.features.settings.model.UiSetting
 import com.example.longdogtracker.features.settings.viewmodel.SettingsViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen() {
     val viewModel = hiltViewModel<SettingsViewModel>()
     val viewState by viewModel.settingsStateFlow.collectAsState()
+    val context = LocalContext.current
     LaunchedEffect(key1 = null) {
-        viewModel.loadSettings()
+        viewModel.loadSettings(context)
     }
     HandleSettingsState(state = viewState)
 }

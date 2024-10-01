@@ -1,6 +1,11 @@
 package com.example.longdogtracker.features.settings.viewmodel
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Context.CLIPBOARD_SERVICE
 import android.util.Log
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.longdogtracker.features.media.EpisodesRepo
@@ -29,14 +34,20 @@ class SettingsViewModel @Inject constructor(
     private val settingsPerfs: SettingsPreferences,
     private val longDogDatabase: LongDogDatabase,
     private val episodesRepo: EpisodesRepo,
-) :
-    ViewModel() {
+) : ViewModel() {
+
+    private var context: Context? = null
 
     private val settingsMutableStateFlow =
         MutableStateFlow<SettingsState>(SettingsState.Loading)
     val settingsStateFlow: StateFlow<SettingsState> = settingsMutableStateFlow
 
-    fun loadSettings() {
+    fun resetContext() {
+        context = null
+    }
+
+    fun loadSettings(context: Context) {
+        this.context = context
         settingsMutableStateFlow.value = SettingsState.Loading
         viewModelScope.launch {
             val allUiSettings = mutableListOf<UiSetting>()
@@ -131,7 +142,11 @@ class SettingsViewModel @Inject constructor(
                             val jsonAdapter: JsonAdapter<ExportType> =
                                 moshi.adapter(ExportType::class.java)
                             val exportString = jsonAdapter.toJson(ExportType(exportSeasons))
-                            Log.d("export", exportString)
+                            val clipboardManager = context?.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+
+                            val clipData = ClipData.newPlainText("backup", exportString)
+
+                            clipboardManager.setPrimaryClip(clipData)
                         }
 
                         is EpisodesRepo.GetEpisodesResult.Failure -> {
