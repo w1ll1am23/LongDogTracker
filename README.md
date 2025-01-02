@@ -14,6 +14,8 @@
 - Add new Long Dogs
 - Track how many you have found/need to find
 
+<img src='images/main_ui.png' width='25%'/>  
+
 ## Getting Started
 - Clone the repo
 - Get a https://thetvdb.com/ API key
