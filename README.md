@@ -18,6 +18,6 @@
 
 ## Getting Started
 - Clone the repo
-- Get a https://thetvdb.com/ API key
+- Get a https://thetvdb.com/ API key see documentation here https://github.com/thetvdb/v4-api?tab=readme-ov-file
 - Add that key to the projects gradle.properties files `THE_TV_DB_API_KEY=YOUR_API_KEY_HERE`
 - Build and install
