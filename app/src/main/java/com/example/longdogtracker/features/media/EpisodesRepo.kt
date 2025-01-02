@@ -70,7 +70,7 @@ class EpisodesRepo @Inject constructor(
                     // Insert in to DB
                     result.body()?.data?.seasons?.let { theTvDbSeasons ->
                         val seasonsToInsert = theTvDbSeasons.mapNotNull { theTvDbSeason ->
-                            if (theTvDbSeason.type.type == "official" && seasons.find { it.id == theTvDbSeason.id } == null) {
+                            if (theTvDbSeason.type.type == "official" && seasons.find { it.id == theTvDbSeason.id } == null && theTvDbSeason.image != null) {
                                 RoomSeason(
                                     id = theTvDbSeason.id,
                                     number = theTvDbSeason.number,

@@ -79,6 +79,7 @@ class MediaFilterSheetViewModel @Inject constructor(
                 settingsPreferences.readIntListPreference(settingSeasonFilter) ?: seasonNumbers
             seasons = seasonNumbers.map { Season(it, seasonFilter.contains(it)) }
             hideFound = settingsPreferences.readBooleanPreference(settingFilterFound)
+            hideUnknown = settingsPreferences.readBooleanPreference(settingFilterUnknown)
             episodeFilterMutableStateFlow.value =
                 EpisodeFilterSheetUIState.Filters(seasons, hideFound, hideUnknown)
         }

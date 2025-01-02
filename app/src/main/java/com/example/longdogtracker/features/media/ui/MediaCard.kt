@@ -36,14 +36,14 @@ import com.example.longdogtracker.ui.theme.BlueyBodySnout
 @Composable
 fun MediaCard(
     uiEpisode: UiEpisode,
-    showMediaSheet: () -> Unit
+    onSelected: () -> Unit
 ) {
 
     Card(
         modifier = Modifier
             .padding(8.dp)
             .clickable {
-                showMediaSheet.invoke()
+                onSelected.invoke()
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(size = 16.dp)

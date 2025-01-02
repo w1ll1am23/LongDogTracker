@@ -28,17 +28,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.longdogtracker.features.media.ui.MediaCard
+import com.example.longdogtracker.features.media.ui.model.UiEpisode
 import com.example.longdogtracker.features.search.viewmodels.SearchViewModel
 import com.example.longdogtracker.ui.theme.LongDogTrackerPrimaryTheme
 import kotlinx.coroutines.delay
 
 @Composable
-fun SearchSheet() {
+fun SearchSheet(onResultSelected: (UiEpisode) -> Unit) {
     val viewModel = hiltViewModel<SearchViewModel>()
 
     val state = viewModel.searchStateFlow.collectAsState()
 
-    HandleSearchState(state.value, viewModel::search)
+    HandleSearchState(state.value, viewModel::search, onResultSelected)
 
     LaunchedEffect(key1 = null) {
         viewModel.searchLoaded()
@@ -47,7 +48,7 @@ fun SearchSheet() {
 }
 
 @Composable
-private fun HandleSearchState(state: SearchViewModel.SearchUIState, search: (String) -> Unit) {
+private fun HandleSearchState(state: SearchViewModel.SearchUIState, search: (String) -> Unit, onResultSelected: (UiEpisode) -> Unit) {
     Column(modifier = Modifier.padding(8.dp)) {
         var query by remember {
             mutableStateOf<String?>(null)
@@ -106,7 +107,9 @@ private fun HandleSearchState(state: SearchViewModel.SearchUIState, search: (Str
                         item {
                             MediaCard(
                                 uiEpisode = it.media
-                            ) {}
+                            ) {
+                                onResultSelected.invoke(it.media)
+                            }
                         }
                     }
                 }
@@ -127,8 +130,6 @@ private fun HandleSearchState(state: SearchViewModel.SearchUIState, search: (Str
 @Composable
 private fun SearchSheetPreview() {
     LongDogTrackerPrimaryTheme {
-        HandleSearchState(state = SearchViewModel.SearchUIState.Loading) {
-
-        }
+        HandleSearchState(state = SearchViewModel.SearchUIState.Loading, {}, {})
     }
 }

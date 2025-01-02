@@ -1,6 +1,5 @@
 package com.example.longdogtracker.features.media.ui
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -73,7 +72,14 @@ fun MediaScreen(navigate: () -> Unit) {
         mutableStateOf(false)
     }
 
-    HandleUiState(uiState = uiState.value, viewModel::sheetDismissed) { topBarNavigation ->
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    HandleUiState(
+        uiState = uiState.value,
+        listState = listState,
+        viewModel::sheetDismissed
+    ) { topBarNavigation ->
         when (topBarNavigation) {
             TopBarNavigation.SEARCH -> {
                 showSearchSheet.value = true
@@ -113,12 +119,24 @@ fun MediaScreen(navigate: () -> Unit) {
             onDismissRequest = {
                 showSearchSheet.value = false
             }) {
-            SearchSheet()
+            SearchSheet { selected ->
+                showSearchSheet.value = false
+                when (val state = uiState.value) {
+                    is MediaUIState.Media -> {
+                        state.episodeLocations[selected.seasonEpisode]?.let {
+                            coroutineScope.launch {
+                                listState.scrollToItem(it)
+                            }
+                        }
+                    }
+
+                    else -> Unit
+                }
+            }
         }
     }
 
     LaunchedEffect(key1 = null) {
-        Log.d("MediaScreen", "Loading initial state from composable")
         viewModel.loadInitialData()
     }
 }
@@ -127,6 +145,7 @@ fun MediaScreen(navigate: () -> Unit) {
 @Composable
 private fun HandleUiState(
     uiState: MediaUIState,
+    listState: LazyListState,
     sheetDismissed: () -> Unit,
     topBarNavigate: (TopBarNavigation) -> Unit,
 ) {
@@ -152,7 +171,7 @@ private fun HandleUiState(
                     val selectedMedia = remember {
                         mutableStateOf<UiEpisode?>(null)
                     }
-                    val listState = rememberLazyListState()
+
 
 
                     LazyColumn(state = listState) {
@@ -163,7 +182,6 @@ private fun HandleUiState(
                                         MediaListHeader(
                                             listState = listState,
                                             header = listItem,
-                                            headerLocations = uiState.headerLocations
                                         )
                                     }
                                 }
@@ -234,7 +252,6 @@ private fun HandleUiState(
 private fun MediaListHeader(
     listState: LazyListState,
     header: MediaListItem.Header,
-    headerLocations: List<Int>
 ) {
     val coroutineScope = rememberCoroutineScope()
     Column {
@@ -265,71 +282,35 @@ private fun MediaListHeader(
                     contentDescription = null,
                 )
             }
-            val currentHeaderLocation =
-                headerLocations.indexOf(header.index)
-            when {
-                currentHeaderLocation == 0 && headerLocations.size > 1 -> {
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            listState.scrollToItem(
-                                headerLocations[1]
-                            )
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(BlueyBodyAccentLight)
+            ) {
+                IconButton(onClick = {
+                    coroutineScope.launch {
+                        listState.scrollToItem(
+                            header.firstEpisodeIndex
                         )
                     }
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = null
+                    )
                 }
-
-                currentHeaderLocation == headerLocations.size - 1 && headerLocations.size > 1 -> {
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            listState.scrollToItem(
-                                headerLocations[currentHeaderLocation - 1]
-                            )
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = null
+                IconButton(onClick = {
+                    coroutineScope.launch {
+                        listState.scrollToItem(
+                            header.lastEpisodeIndex
                         )
                     }
-                }
-
-                headerLocations.size > 2 -> {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .background(BlueyBodyAccentLight)
-                    ) {
-                        IconButton(onClick = {
-                            coroutineScope.launch {
-                                listState.scrollToItem(
-                                    headerLocations[currentHeaderLocation - 1]
-                                )
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowUp,
-                                contentDescription = null
-                            )
-                        }
-                        IconButton(onClick = {
-                            coroutineScope.launch {
-                                listState.scrollToItem(
-                                    headerLocations[currentHeaderLocation + 1]
-                                )
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = null
-                            )
-                        }
-                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = null
+                    )
                 }
             }
         }

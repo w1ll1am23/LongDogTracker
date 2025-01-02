@@ -16,7 +16,7 @@ data class TheTvDbCharacter(
 )
 
 @JsonClass(generateAdapter = true)
-data class TheTvDbSeriesSeason(val id: Int, val number: Int, val type: TheTvDbSeasonType)
+data class TheTvDbSeriesSeason(val id: Int, val number: Int, val type: TheTvDbSeasonType, val image: String?)
 
 @JsonClass(generateAdapter = true)
 data class TheTvDbSeasonType(val id: Int, val type: String)

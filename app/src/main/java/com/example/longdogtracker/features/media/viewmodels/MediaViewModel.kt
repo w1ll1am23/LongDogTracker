@@ -40,20 +40,13 @@ class MediaViewModel @Inject constructor(
                                 val mediaList = mutableListOf<MediaListItem>()
                                 val seasons = mutableListOf<Int>()
                                 val headerLocations = mutableListOf<Int>()
+                                val episodeLocations = mutableMapOf<String, Int>()
                                 var count = 0
                                 episodesResult.episodes.forEach { (season, episodes) ->
                                     headerLocations.add(count)
                                     seasons.add(season.number)
-                                    mediaList.add(
-                                        MediaListItem.Header(
-                                            key = season.id,
-                                            index = count,
-                                            season = "Season: ${season.number}",
-                                            longDogs = "${episodes.sumOf { it.longDogsFound }} of ${episodes.sumOf { it.knownLongDogCount }}",
-                                            totalCount = "${episodes.size} episodes"
-                                        )
-                                    )
                                     count += 1
+                                    val episodesToAdd = mutableListOf<MediaListItem.Media>()
                                     episodes.forEach { episode ->
                                         if (episode.knownLongDogCount == 0 && hideUnknown) {
                                             return@forEach
@@ -61,7 +54,8 @@ class MediaViewModel @Inject constructor(
                                         if ((episode.longDogsFound == episode.knownLongDogCount && episode.knownLongDogCount != 0) && hideFound) {
                                             return@forEach
                                         }
-                                        mediaList.add(
+                                        episodeLocations[episode.seasonEpisode] = count
+                                        episodesToAdd.add(
                                             MediaListItem.Media(
                                                 index = count,
                                                 key = episode.id,
@@ -70,8 +64,20 @@ class MediaViewModel @Inject constructor(
                                         )
                                         count += 1
                                     }
+                                    mediaList.add(
+                                        MediaListItem.Header(
+                                            key = season.id,
+                                            index = count,
+                                            season = "Season: ${season.number}",
+                                            longDogs = "${episodes.sumOf { it.longDogsFound }} of ${episodes.sumOf { it.knownLongDogCount }}",
+                                            totalCount = "${episodes.size} episodes",
+                                            firstEpisodeIndex = count - episodesToAdd.size,
+                                            lastEpisodeIndex = count - 1
+                                        )
+                                    )
+                                    mediaList.addAll(episodesToAdd)
                                 }
-                                MediaUIState.Media(mediaList, headerLocations)
+                                MediaUIState.Media(mediaList, episodeLocations)
                             }
 
                             is EpisodesRepo.GetEpisodesResult.Failure -> {
